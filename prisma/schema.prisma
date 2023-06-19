@@ -14,21 +14,12 @@ model User {
   id            String      @unique @default(uuid())
   name          String
   shNumber      String      @unique
-  agentId       String
-  Agent         Agent       @relation(fields: [agentId], references: [id])
   salesZoneId   String
   SalesZone     SalesZone   @relation(fields: [salesZoneId], references: [id])
   password      String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-}
-
-model Agent {
-  id          String      @unique @default(uuid())
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  User        User[]
+  
   Consumer    Consumer[]
 }
 
@@ -48,8 +39,8 @@ model Consumer {
   coordinate      String
   consumerTypeid  String
   ConsumerType    ConsumerType  @relation(fields: [consumerTypeid], references: [id])
-  agentId         String
-  Agent           Agent         @relation(fields: [agentId], references: [id])
+  userId          String
+  User            User          @relation(fields: [userId], references: [id])
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
