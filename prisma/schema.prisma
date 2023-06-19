@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @unique @default(uuid())
+  name          String
+  shNumber      String      @unique
+  agentId       String
+  Agent         Agent       @relation(fields: [agentId], references: [id])
+  salesZoneId   String
+  SalesZone     SalesZone   @relation(fields: [salesZoneId], references: [id])
+  password      String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Agent {
+  id          String      @unique @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  User        User[]
+  Consumer    Consumer[]
+}
+
+model SalesZone {
+  id          String      @unique @default(uuid())
+  name        String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  User        User[]
+}
+
+model Consumer {
+  id              String        @unique @default(uuid())
+  name            String
+  address         String
+  coordinate      String
+  consumerTypeid  String
+  ConsumerType    ConsumerType  @relation(fields: [consumerTypeid], references: [id])
+  agentId         String
+  Agent           Agent         @relation(fields: [agentId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model ConsumerType {
+  id        String     @unique @default(uuid())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  Consumer Consumer[]
+}
