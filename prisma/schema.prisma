@@ -14,6 +14,7 @@ model User {
   id            String      @unique @default(uuid())
   name          String
   shNumber      String      @unique
+  email         String?     @unique
   salesZoneId   String
   SalesZone     SalesZone   @relation(fields: [salesZoneId], references: [id])
   password      String
@@ -36,7 +37,8 @@ model Consumer {
   id              String        @unique @default(uuid())
   name            String
   address         String
-  coordinate      String
+  latitude        String
+  longitude       String
   consumerTypeid  String
   ConsumerType    ConsumerType  @relation(fields: [consumerTypeid], references: [id])
   userId          String

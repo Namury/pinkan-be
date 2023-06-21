@@ -1,18 +1,19 @@
 export interface UserToken {
-  id: number;
-  email: string;
+  id: string;
+  shNumber: string;
 }
 
 export interface UserRegister {
-  email: string;
-  phone: string;
   name: string;
+  shNumber: string;
+  email?:string;
+  salesZoneId: string;
   password: string;
 }
 
 export interface UserResponse {
   token: string;
   name: string;
-  email: string;
+  shNumber: string;
   isAdmin?: boolean | null;
 }

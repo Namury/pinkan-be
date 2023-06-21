@@ -7,7 +7,7 @@ import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {
   const token = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, shNumber: user.shNumber },
     process.env.JWT_SECRET_TOKEN?.toString() || "",
     {
       expiresIn: "24h",
@@ -25,9 +25,9 @@ export async function userLoginService(
       /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     let condition: object;
 
-    condition = { email: username };
+    condition = { shNumber: username };
     if (!re.test(username)) {
-      condition = { username: username };
+      condition = { email: username };
     }
 
     const user = await prisma.user.findUnique({
@@ -38,10 +38,10 @@ export async function userLoginService(
       const userDetails: UserResponse = {
         token: token,
         name: user.name,
-        email: user.email,
+        shNumber: user.shNumber,
       };
 
-      if(user.username == "AdminTurboholic"){
+      if(user.email == "AdminTurboholic"){
         userDetails.isAdmin = true;
       }
 
@@ -69,7 +69,7 @@ export async function userRegisterService(
   try {
     const selectedUserField = {
       id: true,
-      email: true,
+      shNumber: true,
       name: true,
     };
     user.password = await bcrypt.hash(user.password, 12);
