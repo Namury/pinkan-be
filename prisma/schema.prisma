@@ -34,15 +34,27 @@ model SalesZone {
 }
 
 model Consumer {
+  id                    String        @unique @default(uuid())
+  name                  String
+  address               String
+  latitude              String
+  longitude             String
+  consumerTypeid        String
+  ConsumerType          ConsumerType  @relation(fields: [consumerTypeid], references: [id])
+  userId                String
+  User                  User          @relation(fields: [userId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  ConsumerNotification  ConsumerNotification?
+}
+
+model ConsumerNotification {
   id              String        @unique @default(uuid())
-  name            String
-  address         String
-  latitude        String
-  longitude       String
-  consumerTypeid  String
-  ConsumerType    ConsumerType  @relation(fields: [consumerTypeid], references: [id])
-  userId          String
-  User            User          @relation(fields: [userId], references: [id])
+  consumerId      String        @unique
+  Consumer        Consumer      @relation(fields: [consumerId], references: [id])
+  isRead          Boolean
+  daysRemaining   Int
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
