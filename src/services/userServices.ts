@@ -26,10 +26,11 @@ export async function userLoginService(
     let condition: object;
 
     condition = { shNumber: username };
-    if (!re.test(username)) {
+    if (re.test(username)) {
       condition = { email: username };
     }
 
+    console.log(condition)
     const user = await prisma.user.findUnique({
       where: condition,
     });
@@ -38,17 +39,17 @@ export async function userLoginService(
       const userDetails: UserResponse = {
         token: token,
         name: user.name,
-        shNumber: user.shNumber,
+        shNumber: user.shNumber? user.shNumber :"",
       };
 
-      if(user.email == "AdminTurboholic"){
+      if(user.email){
         userDetails.isAdmin = true;
       }
 
       return {
         status: true,
         message: "Login Success",
-        data: {rank: 5, ...userDetails},
+        data: userDetails,
       };
     } else {
       throw new Error("Incorrect");

@@ -1,3 +1,5 @@
+import { UUID } from "crypto";
+
 export interface UserToken {
   id: string;
   shNumber: string;
@@ -7,7 +9,7 @@ export interface UserRegister {
   name: string;
   shNumber: string;
   email?:string;
-  salesZoneId: string;
+  salesZoneId: UUID;
   password: string;
 }
 
