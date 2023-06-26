@@ -39,6 +39,10 @@ model Consumer {
   address               String
   latitude              String
   longitude             String
+  refillDate            DateTime      @default(now())
+  refillFive            Int           @default(0)
+  refillTwelve          Int           @default(0)
+  refillFifty           Int           @default(0)
   consumerTypeid        String
   ConsumerType          ConsumerType  @relation(fields: [consumerTypeid], references: [id])
   userId                String
