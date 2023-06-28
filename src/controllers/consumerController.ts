@@ -11,6 +11,7 @@ import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
   response_bad_request,
   response_internal_server_error,
+  response_not_found,
   response_success,
 } from "$utils/response.utils";
 import { Request, Response } from "express";
@@ -21,7 +22,7 @@ export async function getConsumer(req: Request, res: Response): Promise<Response
     if (status) {
       return response_success(res, data);
     } else {
-      return response_bad_request(res, error);
+      return response_not_found(res, error);
     }
   } catch (err: unknown) {
     return response_internal_server_error(res, String(err));
@@ -36,7 +37,7 @@ export async function getConsumerById(req: Request, res: Response) {
     if (status) {
       return response_success(res, data);
     } else {
-      return response_bad_request(res, error);
+      return response_not_found(res, error);
     }
 
   } catch (err: unknown) {
@@ -50,7 +51,7 @@ export async function getConsumerType(req: Request, res: Response): Promise<Resp
     if (status) {
       return response_success(res, data);
     } else {
-      return response_bad_request(res, error);
+      return response_not_found(res, error);
     }
   } catch (err: unknown) {
     return response_internal_server_error(res, String(err));
@@ -65,7 +66,7 @@ export async function getConsumerTypeById(req: Request, res: Response) {
     if (status) {
       return response_success(res, data);
     } else {
-      return response_bad_request(res, error);
+      return response_not_found(res, error);
     }
 
   } catch (err: unknown) {

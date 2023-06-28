@@ -5,18 +5,18 @@ import { consumerCreate, consumerEdit, consumerResponse } from "$utils/consumer.
 
 export async function getConsumerService(): Promise<response> {
   try {
-    const salesZones = await prisma.salesZone.findMany();
+    const consumers = await prisma.consumer.findMany();
 
     return {
       status: true,
-      data: { salesZones },
-      message: "Get Sales Zones Success",
+      data: { consumers },
+      message: "Get All Consumer Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Get Sales Zones Failed",
+      message: "Get All Consumer Failed",
       error: String(err),
     };
   }
@@ -26,7 +26,7 @@ export async function getConsumerByIdService(
   id: string
 ): Promise<response> {
   try {
-    const salesZone = await prisma.salesZone.findUnique({
+    const consumer = await prisma.consumer.findUnique({
       where: {
         id,
       }
@@ -34,14 +34,14 @@ export async function getConsumerByIdService(
 
     return {
       status: true,
-      data: { salesZone },
-      message: "Get Sales Zone by ID Success",
+      data: { consumer },
+      message: "Get consumer by ID Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Get Sales Zone by ID Failed",
+      message: "Get consumer by ID Failed",
       error: String(err),
     };
   }
@@ -49,18 +49,18 @@ export async function getConsumerByIdService(
 
 export async function getConsumerTypeService(): Promise<response> {
   try {
-    const salesZones = await prisma.salesZone.findMany();
+    const consumerType = await prisma.consumerType.findMany();
 
     return {
       status: true,
-      data: { salesZones },
-      message: "Get Sales Zones Success",
+      data: { consumerType },
+      message: "Get Consumer Type Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Get Sales Zones Failed",
+      message: "Get Consumer Type Failed",
       error: String(err),
     };
   }
@@ -70,7 +70,7 @@ export async function getConsumerTypeByIdService(
   id: string
 ): Promise<response> {
   try {
-    const salesZone = await prisma.salesZone.findUnique({
+    const consumerType = await prisma.consumerType.findUnique({
       where: {
         id,
       }
@@ -78,14 +78,14 @@ export async function getConsumerTypeByIdService(
 
     return {
       status: true,
-      data: { salesZone },
-      message: "Get Sales Zone by ID Success",
+      data: { consumerType },
+      message: "Get Consumer Type by ID Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Get Sales Zone by ID Failed",
+      message: "Get Consumer Type by ID Failed",
       error: String(err),
     };
   }
