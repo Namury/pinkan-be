@@ -2,7 +2,7 @@ import { UUID } from "crypto";
 
 export interface UserToken {
   id: string;
-  shNumber: string;
+  shNumber: string|null;
 }
 
 export interface UserRegister {

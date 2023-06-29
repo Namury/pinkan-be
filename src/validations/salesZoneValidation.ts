@@ -8,7 +8,7 @@ export async function validateSalesZoneByIdRequest(
   res: Response,
   next: NextFunction
 ) {
-  const { id } = req.body;
+  const id = req.params.id;
 
   if (!id) return response_bad_request(res, "id is required");
   

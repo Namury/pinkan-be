@@ -5,11 +5,15 @@ import { consumerCreate, consumerEdit, consumerResponse } from "$utils/consumer.
 
 export async function getConsumerService(): Promise<response> {
   try {
-    const consumers = await prisma.consumer.findMany();
+    const consumers = await prisma.consumer.findMany({
+      include: {
+        ConsumerType: true
+      }
+    });
 
     return {
       status: true,
-      data: { consumers },
+      data: consumers,
       message: "Get All Consumer Success",
     };
   } catch (err: unknown) {
@@ -29,12 +33,14 @@ export async function getConsumerByIdService(
     const consumer = await prisma.consumer.findUnique({
       where: {
         id,
+      }, include: {
+        ConsumerType: true
       }
     });
 
     return {
       status: true,
-      data: { consumer },
+      data: { ...consumer },
       message: "Get consumer by ID Success",
     };
   } catch (err: unknown) {
@@ -53,7 +59,7 @@ export async function getConsumerTypeService(): Promise<response> {
 
     return {
       status: true,
-      data: { consumerType },
+      data: consumerType,
       message: "Get Consumer Type Success",
     };
   } catch (err: unknown) {
@@ -78,7 +84,7 @@ export async function getConsumerTypeByIdService(
 
     return {
       status: true,
-      data: { consumerType },
+      data: { ...consumerType },
       message: "Get Consumer Type by ID Success",
     };
   } catch (err: unknown) {

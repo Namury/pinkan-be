@@ -7,7 +7,7 @@ import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {
   const token = jwt.sign(
-    { id: user.id, shNumber: user.shNumber },
+    { id: user.id, shNumber: user.shNumber? user.shNumber: null },
     process.env.JWT_SECRET_TOKEN?.toString() || "",
     {
       expiresIn: "24h",
@@ -44,6 +44,8 @@ export async function userLoginService(
 
       if(user.email){
         userDetails.isAdmin = true;
+      } else {
+        userDetails.isAdmin = false;
       }
 
       return {

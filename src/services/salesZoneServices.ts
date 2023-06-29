@@ -7,7 +7,7 @@ export async function getSalesZoneService(): Promise<response> {
 
     return {
       status: true,
-      data: { salesZones },
+      data: salesZones,
       message: "Get Sales Zones Success",
     };
   } catch (err: unknown) {
@@ -32,7 +32,7 @@ export async function getSalesZoneByIdService(
 
     return {
       status: true,
-      data: { salesZone },
+      data: { ...salesZone },
       message: "Get Sales Zone by ID Success",
     };
   } catch (err: unknown) {

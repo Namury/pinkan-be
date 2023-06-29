@@ -14,20 +14,20 @@ export async function validateGetConsumerByIdRequest(
   res: Response,
   next: NextFunction
 ) {
-  const { id } = req.body;
+  const id = req.params.id;
 
   if (!id) return response_bad_request(res, "id is required");
   
-  if( !uuidValidate(id) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+  if( !uuidValidate(id) ) return response_bad_request(res, "Consumer Id must be UUID");
 
-  const checkSalesZoneId = await prisma.salesZone.findUnique({
+  const checkConsumerId = await prisma.consumer.findUnique({
     where: {
       id
     }
   })
 
-  if(!checkSalesZoneId){
-    return response_not_found(res, "Sales Zone not Found")
+  if(!checkConsumerId){
+    return response_not_found(res, "Consumer not Found")
   }
   next();
 }
@@ -37,20 +37,20 @@ export async function validateGetConsumerTypeByIdRequest(
   res: Response,
   next: NextFunction
 ) {
-  const { id } = req.body;
+  const id = req.params.id;
 
   if (!id) return response_bad_request(res, "id is required");
   
-  if( !uuidValidate(id) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+  if( !uuidValidate(id) ) return response_bad_request(res, "Consumer Type Id must be UUID");
 
-  const checkSalesZoneId = await prisma.salesZone.findUnique({
+  const checkConsumerTypeId = await prisma.consumerType.findUnique({
     where: {
       id
     }
   })
 
-  if(!checkSalesZoneId){
-    return response_not_found(res, "Sales Zone not Found")
+  if(!checkConsumerTypeId){
+    return response_not_found(res, "Consumer Type not Found")
   }
   next();
 }

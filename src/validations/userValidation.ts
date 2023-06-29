@@ -9,6 +9,37 @@ function validateEmail(email: string): boolean {
   return re.test(email);
 }
 
+export async function validateGetAllUserRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  
+}
+
+export async function validateGetUserByIdRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const id = req.params.id;
+
+  if (!id) return response_bad_request(res, "id is required");
+  
+  if( !uuidValidate(id) ) return response_bad_request(res, "User Id must be UUID");
+
+  const checkUserId = await prisma.user.findUnique({
+    where: {
+      id
+    }
+  })
+
+  if(!checkUserId){
+    return response_not_found(res, "Sales Zone not Found")
+  }
+  next();
+}
+
 export function validateLoginRequest(
   req: Request,
   res: Response,
@@ -29,32 +60,47 @@ export async function validateRegisterRequest(
   const { name, shNumber, salesZoneId, email, password } = req.body;
 
   if (!name) return response_bad_request(res, "Name is required");
-  if (!shNumber) return response_bad_request(res, "SH Number is required");
-  const checkShNumber = await prisma.user.findUnique({
-    where: {
-      shNumber
-    }
-  })
+  if (!shNumber && !email) return response_bad_request(res, "SH Number Or Email is required");
+  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  if (!email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  if (shNumber){
+    const checkShNumber = await prisma.user.findUnique({
+      where: {
+        shNumber
+      }
+    })
 
-  if(checkShNumber){
-    return response_conflict(res, 'SH Number already exist')
+    if(checkShNumber){
+      return response_conflict(res, 'SH Number already exist')
+    }
+    if (!salesZoneId) return response_bad_request(res, "Sales Zone Id is required");
+    if( !uuidValidate(salesZoneId) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+
+    const checkSalesZoneId = await prisma.salesZone.findUnique({
+      where: {
+        id: salesZoneId
+      }
+    })
+
+    if(!checkSalesZoneId){
+      return response_not_found(res, "Sales Zone not Found")
+    }
   }
 
-  if(email && shNumber) return response_bad_request(res, "only either Email or SH Number can be inputted");
-  if (email && !validateEmail(email))
-    return response_bad_request(res, "Email provided is not a correct form");
+  if (email){
+    if (!validateEmail(email))
+      return response_bad_request(res, "Email provided is not a correct form");
+      
+    const checkEmail = await prisma.user.findUnique({
+      where: {
+        email
+      }
+    })
+    
+    if(checkEmail){
+      return response_conflict(res, 'Email already exist')
+    }
+  }
   if (!password) return response_bad_request(res, "Password is required");
-  if (!salesZoneId) return response_bad_request(res, "Sales Zone Id is required");
-  if( !uuidValidate(salesZoneId) ) return response_bad_request(res, "Sales Zone Id must be UUID");
-
-  const checkSalesZoneId = await prisma.salesZone.findUnique({
-    where: {
-      id: salesZoneId
-    }
-  })
-
-  if(!checkSalesZoneId){
-    return response_not_found(res, "Sales Zone not Found")
-  }
   next();
 }

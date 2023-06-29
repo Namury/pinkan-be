@@ -13,10 +13,10 @@ datasource db {
 model User {
   id            String      @unique @default(uuid())
   name          String
-  shNumber      String      @unique
+  shNumber      String?     @unique
   email         String?     @unique
-  salesZoneId   String
-  SalesZone     SalesZone   @relation(fields: [salesZoneId], references: [id])
+  salesZoneId   String?
+  SalesZone     SalesZone?  @relation(fields: [salesZoneId], references: [id])
   password      String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -43,24 +43,14 @@ model Consumer {
   refillFive            Int           @default(0)
   refillTwelve          Int           @default(0)
   refillFifty           Int           @default(0)
+  isRead                Boolean       @default(false)
+  daysRemaining         Int           @default(0)
   consumerTypeid        String
   ConsumerType          ConsumerType  @relation(fields: [consumerTypeid], references: [id])
   userId                String
   User                  User          @relation(fields: [userId], references: [id])
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
-
-  ConsumerNotification  ConsumerNotification?
-}
-
-model ConsumerNotification {
-  id              String        @unique @default(uuid())
-  consumerId      String        @unique
-  Consumer        Consumer      @relation(fields: [consumerId], references: [id])
-  isRead          Boolean
-  daysRemaining   Int
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
 }
 
 model ConsumerType {
