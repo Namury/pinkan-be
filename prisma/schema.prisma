@@ -12,7 +12,7 @@ datasource db {
 
 model User {
   id            String      @unique @default(uuid())
-  name          String
+  name          String      
   shNumber      String?     @unique
   email         String?     @unique
   salesZoneId   String?
@@ -37,6 +37,7 @@ model Consumer {
   id                    String        @unique @default(uuid())
   name                  String
   address               String
+  phone                 String        @unique
   latitude              String
   longitude             String
   refillDate            DateTime      @default(now())

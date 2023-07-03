@@ -3,9 +3,17 @@ import { response } from "$utils/response.utils";
 
 import { consumerCreate, consumerEdit, consumerResponse } from "$utils/consumer.utils";
 
-export async function getConsumerService(): Promise<response> {
+export async function getConsumerService(userId:string, isAdmin:boolean): Promise<response> {
   try {
+    let condition = {}
+    if(!isAdmin){
+      condition = {
+        userId
+      }
+    }
+
     const consumers = await prisma.consumer.findMany({
+      where: condition,
       include: {
         ConsumerType: true
       }
@@ -38,6 +46,9 @@ export async function getConsumerByIdService(
       }
     });
 
+    if(consumer)
+      console.log(consumer.daysRemaining + 1)
+      
     return {
       status: true,
       data: { ...consumer },

@@ -18,7 +18,10 @@ import { Request, Response } from "express";
 
 export async function getConsumer(req: Request, res: Response): Promise<Response> {
   try {
-    const { status, data, error } = await getConsumerService();
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+
+    const { status, data, error } = await getConsumerService(userId, isAdmin);
     if (status) {
       return response_success(res, data);
     } else {

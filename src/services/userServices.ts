@@ -7,7 +7,7 @@ import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {
   const token = jwt.sign(
-    { id: user.id, shNumber: user.shNumber? user.shNumber: null },
+    { id: user.id, shNumber: user.shNumber? user.shNumber: null, isAdmin: user.isAdmin },
     process.env.JWT_SECRET_TOKEN?.toString() || "",
     {
       expiresIn: "24h",
@@ -30,12 +30,11 @@ export async function userLoginService(
       condition = { email: username };
     }
 
-    console.log(condition)
     const user = await prisma.user.findUnique({
       where: condition,
     });
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = createToken(user);
+      const token = createToken({...user, isAdmin: user.email ? true : false});
       const userDetails: UserResponse = {
         token: token,
         name: user.name,
@@ -73,6 +72,7 @@ export async function userRegisterService(
     const selectedUserField = {
       id: true,
       shNumber: true,
+      email: true,
       name: true,
     };
     user.password = await bcrypt.hash(user.password, 12);
@@ -83,7 +83,7 @@ export async function userRegisterService(
       },
       select: selectedUserField,
     });
-    const token = createToken(createdUser);
+    const token = createToken({...createdUser, isAdmin: createdUser.email ? true : false});
 
     return {
       status: true,
