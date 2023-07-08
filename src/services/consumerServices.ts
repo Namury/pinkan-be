@@ -45,10 +45,7 @@ export async function getConsumerByIdService(
         ConsumerType: true
       }
     });
-
-    if(consumer)
-      console.log(consumer.daysRemaining + 1)
-      
+ 
     return {
       status: true,
       data: { ...consumer },
@@ -109,32 +106,34 @@ export async function getConsumerTypeByIdService(
 }
 
 export async function addConsumerService(
-  user: consumerCreate
+  consumer: consumerCreate
 ): Promise<response> {
   try {
-    const selectedUserField = {
-      id: true,
-      shNumber: true,
-      name: true,
-    };
-
-    const createdUser = await prisma.user.create({
+    if(!consumer.consumptionDaysRemaining)
+      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate)
+    
+    consumer.refillDate = new Date(Date.now())
+    if(consumer.refillDate)consumer.refillDate = new Date(consumer.refillDate)
+    if(consumer.consumptionDaysEstimate) consumer.consumptionDaysEstimate = Number(Math.abs(consumer.consumptionDaysEstimate))
+    if(consumer.refillFive) consumer.refillFive = Number(consumer.refillFive)
+    if(consumer.refillFifty) consumer.refillFifty = Number(consumer.refillFifty)
+    if(consumer.refillTwelve) consumer.refillTwelve = Number(consumer.refillTwelve)
+    const createdConsumer = await prisma.consumer.create({
       data: {
-        ...user,
+        ...consumer,
       },
-      select: selectedUserField,
     });
 
     return {
       status: true,
-      data: { user: createdUser },
-      message: "Register Success",
+      data: { createdConsumer },
+      message: "Create Consumer Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Register Failed",
+      message: "Create Consumer Failed",
       error: String(err),
     };
   }
@@ -151,7 +150,7 @@ export async function editConsumerService(
       name: true,
     };
 
-    const createdUser = await prisma.user.create({
+    const createdUser = await prisma.consumer.create({
       data: {
         ...consumer,
       },

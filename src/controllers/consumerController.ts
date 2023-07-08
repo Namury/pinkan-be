@@ -79,7 +79,7 @@ export async function getConsumerTypeById(req: Request, res: Response) {
 
 export async function addConsumer(req: Request, res: Response) {
   try {
-    const consumerData:consumerCreate = req.body
+    const consumerData:consumerCreate = {...req.body, userId: res.locals.jwtPayload.id}
   
     const { status, data, error } = await addConsumerService(consumerData);
     if (status) {

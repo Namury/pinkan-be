@@ -34,24 +34,25 @@ model SalesZone {
 }
 
 model Consumer {
-  id                    String        @unique @default(uuid())
-  name                  String
-  address               String
-  phone                 String        @unique
-  latitude              String
-  longitude             String
-  refillDate            DateTime      @default(now())
-  refillFive            Int           @default(0)
-  refillTwelve          Int           @default(0)
-  refillFifty           Int           @default(0)
-  isRead                Boolean       @default(false)
-  daysRemaining         Int           @default(0)
-  consumerTypeid        String
-  ConsumerType          ConsumerType  @relation(fields: [consumerTypeid], references: [id])
-  userId                String
-  User                  User          @relation(fields: [userId], references: [id])
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
+  id                        String        @unique @default(uuid())
+  name                      String
+  address                   String
+  phone                     String        @unique
+  latitude                  String
+  longitude                 String
+  refillDate                DateTime      @default(now())
+  refillFive                Int           @default(0)
+  refillTwelve              Int           @default(0)
+  refillFifty               Int           @default(0)
+  isRead                    Boolean       @default(false)
+  consumptionDaysEstimate   Int           @default(0)
+  consumptionDaysRemaining  Int           @default(0)
+  consumerTypeid            String
+  ConsumerType              ConsumerType  @relation(fields: [consumerTypeid], references: [id])
+  userId                    String
+  User                      User          @relation(fields: [userId], references: [id])
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
 }
 
 model ConsumerType {

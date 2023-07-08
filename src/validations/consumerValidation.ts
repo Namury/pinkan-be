@@ -84,35 +84,50 @@ export async function validateAddConsumerRequest(
   res: Response,
   next: NextFunction
 ) {
-  const { name, shNumber, salesZoneId, email, password } = req.body;
+  const {
+    name,
+    address,
+    phone,
+    latitude,
+    longitude,
+    consumptionDaysEstimate,
+    consumerTypeid,
+  } = req.body
 
+  const userId = res.locals.jwtPayload.id
+  
   if (!name) return response_bad_request(res, "Name is required");
-  if (!shNumber) return response_bad_request(res, "SH Number is required");
-  const checkShNumber = await prisma.user.findUnique({
+  const checkUnique = await prisma.consumer.findFirst({
     where: {
-      shNumber
+      name,
+      userId
     }
   })
 
-  if(checkShNumber){
-    return response_conflict(res, 'SH Number already exist')
+  if(checkUnique){
+    return response_conflict(res, 'Name and User combination already exist')
   }
 
-  if(email && shNumber) return response_bad_request(res, "only either Email or SH Number can be inputted");
-  if (email && !validateEmail(email))
-    return response_bad_request(res, "Email provided is not a correct form");
-  if (!password) return response_bad_request(res, "Password is required");
-  if (!salesZoneId) return response_bad_request(res, "Sales Zone Id is required");
-  if( !uuidValidate(salesZoneId) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+  if(!address) return response_bad_request(res, "address is Required")
+  if(!phone) return response_bad_request(res, "phone is Required")
+  if(!latitude) return response_bad_request(res, "latitude is Required")  
+  if(!longitude) return response_bad_request(res, "longitude is Required")
+  // if(!refillDate) return response_bad_request(res, "refillDate is Required")
+  if(!consumptionDaysEstimate) return response_bad_request(res, "consumptionDaysEstimate is Required")
+  if (!consumerTypeid) return response_bad_request(res, "Consumer Type is required");
+  
+  
+  if (!consumerTypeid) return response_bad_request(res, "Consumer Type is required");
+  if( !uuidValidate(consumerTypeid) ) return response_bad_request(res, "Sales Zone Id must be UUID");
 
-  const checkSalesZoneId = await prisma.salesZone.findUnique({
+  const checkConsumerTypeid = await prisma.consumerType.findUnique({
     where: {
-      id: salesZoneId
+      id: consumerTypeid
     }
   })
 
-  if(!checkSalesZoneId){
-    return response_not_found(res, "Sales Zone not Found")
+  if(!checkConsumerTypeid){
+    return response_not_found(res, "Consumer Type not Found")
   }
   next();
 }
