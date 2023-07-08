@@ -20,8 +20,9 @@ export async function getConsumer(req: Request, res: Response): Promise<Response
   try {
     const userId = res.locals.jwtPayload.id;
     const isAdmin = res.locals.jwtPayload.isAdmin;
+    const filter = Object(req.query.filter);
 
-    const { status, data, error } = await getConsumerService(userId, isAdmin);
+    const { status, data, error } = await getConsumerService(userId, isAdmin, filter);
     if (status) {
       return response_success(res, data);
     } else {

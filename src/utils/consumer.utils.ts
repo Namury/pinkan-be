@@ -16,6 +16,12 @@ export interface consumerCreate {
   userId: string;
 }
 
+export interface consumerFilter {
+  userId: string;
+  salesZoneId: string;
+  name: string;
+}
+
 export interface consumerEdit {
   name: string;
   address: string;

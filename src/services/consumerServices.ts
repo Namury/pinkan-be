@@ -1,23 +1,33 @@
 import { prisma } from "$utils/prisma.utils";
 import { response } from "$utils/response.utils";
 
-import { consumerCreate, consumerEdit, consumerResponse } from "$utils/consumer.utils";
+import { consumerCreate, consumerEdit, consumerFilter, consumerResponse } from "$utils/consumer.utils";
 
-export async function getConsumerService(userId:string, isAdmin:boolean): Promise<response> {
+export async function getConsumerService(userId:string, isAdmin:boolean, filter:consumerFilter): Promise<response> {
   try {
-    let condition = {}
-    if(!isAdmin){
-      condition = {
-        userId
-      }
+    userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%'
+    
+    if(isAdmin && !filter.userId){
+      userId = '%%' 
     }
 
-    const consumers = await prisma.consumer.findMany({
-      where: condition,
-      include: {
-        ConsumerType: true
-      }
-    });
+    const name = filter.name?`%${filter.name}%`:'%%'
+    const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
+    
+    const consumers = await prisma.$queryRaw<[]>`
+      SELECT public."Consumer".*, public."User"."salesZoneId" FROM public."Consumer" 
+      LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
+      WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
+    `;
+
+    if(consumers.length === 0){
+      return {
+        status: false,
+        data: {},
+        message: "Get All Consumer Failed",
+        error: "Data not found"
+      };
+    }
 
     return {
       status: true,
