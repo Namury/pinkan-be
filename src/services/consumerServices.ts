@@ -1,7 +1,8 @@
 import { prisma } from "$utils/prisma.utils";
 import { response } from "$utils/response.utils";
+import * as XLSX from 'xlsx';
 
-import { consumerCreate, consumerEdit, consumerFilter, consumerResponse } from "$utils/consumer.utils";
+import { consumerCreate, consumerEdit, consumerFilter, consumerResponse, formattedConsumerType, formatExportConsumer } from "$utils/consumer.utils";
 
 export async function getConsumerService(userId:string, isAdmin:boolean, filter:consumerFilter): Promise<response> {
   try {
@@ -15,11 +16,13 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
     const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
     const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
     
-    console.log(consumerTypeId)
     const consumers = await prisma.$queryRaw<[]>`
-      SELECT public."Consumer".*, public."User"."salesZoneId", public."ConsumerType".name as "consumerTypeName" FROM public."Consumer" 
+      SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName", 
+      public."User"."shNumber" as "userShNumber", public."User".name as "userName", public."ConsumerType".name as "consumerTypeName" 
+      FROM public."Consumer" 
       LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
       LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
+      LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
     `;
@@ -33,9 +36,19 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       };
     }
 
+    
+    let formattedConsumer:formattedConsumerType[] = []
+    if(filter.export){
+      let nomor = 1
+      consumers.forEach(consumer => {
+        formattedConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
+        nomor++
+      })
+    }
+
     return {
       status: true,
-      data: consumers,
+      data: filter.export?formattedConsumer:consumers,
       message: "Get All Consumer Success",
     };
   } catch (err: unknown) {

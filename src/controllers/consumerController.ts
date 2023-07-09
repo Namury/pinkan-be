@@ -15,7 +15,8 @@ import {
   response_not_found,
   response_success,
 } from "$utils/response.utils";
-import { Request, Response, query } from "express";
+import { Request, Response, json, query } from "express";
+import * as XLSX from 'xlsx';
 
 export async function getConsumer(req: Request, res: Response): Promise<Response> {
   try {
@@ -26,6 +27,31 @@ export async function getConsumer(req: Request, res: Response): Promise<Response
     const { status, data, error } = await getConsumerService(userId, isAdmin, filter);
     if (status) {
       return response_success(res, data);
+    } else {
+      return response_not_found(res, error);
+    }
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function exportConsumer(req: Request, res: Response): Promise<Response> {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const filter = Object(req.query.filter);
+    const currentTime = new Date(Date.now()).toLocaleString('id-ID', { dateStyle: 'long' }).toString();
+    filter.export = true;
+    const { status, data, error } = await getConsumerService(userId, isAdmin, filter);
+    if (status) {
+      const wb = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(Object(data));
+      XLSX.utils.book_append_sheet(wb, worksheet, "Sheet1");
+
+      const buf = XLSX.write(wb, { type:"buffer", bookType:"xlsx" });
+      res.setHeader('Content-Disposition', `attachment; filename="Consumer Pinkan ${currentTime}.xlsx"`);
+      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      return res.end(buf);
     } else {
       return response_not_found(res, error);
     }

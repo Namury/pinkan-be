@@ -48,6 +48,7 @@
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
     "module-alias": "^2.2.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/xlsx-0.20.0.tgz"
   }
 }

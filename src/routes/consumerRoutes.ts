@@ -7,6 +7,7 @@ import {
   editConsumer,
   deleteConsumer,
   bypassUpdateConsumptionDaysRemaining,
+  exportConsumer,
   } from "$controllers/consumerController";
 import express from "express";
 import { checkJwt } from "$middlewares/authMiddleware";
@@ -21,6 +22,7 @@ import {
 const consumerRoutes = express.Router();
 
 consumerRoutes.get("/", checkJwt, getConsumer);
+consumerRoutes.get("/export", checkJwt, exportConsumer);
 consumerRoutes.get("/types", checkJwt, getConsumerType);
 consumerRoutes.get("/bypass-consumption-days-remaining", checkJwt, bypassUpdateConsumptionDaysRemaining);
 consumerRoutes.get("/:id", checkJwt,validateGetConsumerByIdRequest, getConsumerById);
