@@ -196,7 +196,7 @@ export async function deleteConsumerService(
   id: string
 ): Promise<response> {
   try {
-    const salesZone = await prisma.salesZone.findUnique({
+    const consumer = await prisma.consumer.delete({
       where: {
         id,
       }
@@ -204,14 +204,44 @@ export async function deleteConsumerService(
 
     return {
       status: true,
-      data: { salesZone },
-      message: "Get Sales Zone by ID Success",
+      data: {},
+      message: "Delete Consumer Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Get Sales Zone by ID Failed",
+      message: "Delete Consumer Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function cronJobUpdateConsumptionDaysRemaining(): Promise<response> {
+  try {
+    const updateConsumer = await prisma.consumer.updateMany({
+      where: {
+        consumptionDaysRemaining : {
+          lte: 10
+        },
+      },
+      data:{
+        consumptionDaysRemaining: {
+          increment: 1
+        }
+      }
+    })
+
+    return {
+      status: true,
+      data: { updateConsumer },
+      message: "Update consumer consumption days remaining success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Update consumer consumption days remaining success Failed",
       error: String(err),
     };
   }

@@ -6,6 +6,7 @@ import {
   addConsumerService,
   editConsumerService,
   deleteConsumerService,
+  cronJobUpdateConsumptionDaysRemaining,
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -125,3 +126,18 @@ export async function deleteConsumer(req: Request, res: Response) {
     return response_internal_server_error(res, String(err));
   }
 }
+
+export async function bypassUpdateConsumptionDaysRemaining(req: Request, res: Response) {
+  try {
+    const { status, data, error } = await cronJobUpdateConsumptionDaysRemaining();
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_bad_request(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
