@@ -55,15 +55,43 @@ export async function validateGetConsumerTypeByIdRequest(
   next();
 }
 
-export function validateEditConsumerRequest(
+export async function validateEditConsumerRequest(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const { username, password } = req.body;
+  const {
+    name,
+    consumerTypeid,
+  } = req.body
+  const userId = res.locals.jwtPayload.id
+  
+  if (name){
+    const checkUnique = await prisma.consumer.findFirst({
+      where: {
+        name,
+        userId
+      }
+    })
+  
+    if(checkUnique){
+      return response_conflict(res, 'Name and User combination already exist')
+    }
 
-  if (!username) return response_bad_request(res, "Username/Email is required");
-  if (!password) return response_bad_request(res, "Password is required");
+    if(consumerTypeid){
+      if( !uuidValidate(consumerTypeid) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+  
+      const checkConsumerTypeid = await prisma.consumerType.findUnique({
+        where: {
+          id: consumerTypeid
+        }
+      })
+  
+      if(!checkConsumerTypeid){
+        return response_not_found(res, "Consumer Type not Found")
+      }
+    }
+  }
   next();
 }
 

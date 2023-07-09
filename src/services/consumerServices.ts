@@ -13,11 +13,15 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
 
     const name = filter.name?`%${filter.name}%`:'%%'
     const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
+    const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
     
+    console.log(consumerTypeId)
     const consumers = await prisma.$queryRaw<[]>`
-      SELECT public."Consumer".*, public."User"."salesZoneId" FROM public."Consumer" 
+      SELECT public."Consumer".*, public."User"."salesZoneId", public."ConsumerType".name as "consumerTypeName" FROM public."Consumer" 
       LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
+      LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
+      AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
     `;
 
     if(consumers.length === 0){
@@ -154,29 +158,35 @@ export async function editConsumerService(
   consumer: consumerEdit
 ): Promise<response> {
   try {
-    const selectedUserField = {
-      id: true,
-      shNumber: true,
-      name: true,
-    };
 
-    const createdUser = await prisma.consumer.create({
+    if(!consumer.consumptionDaysRemaining && consumer.consumptionDaysEstimate)
+      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate)
+
+    if(consumer.refillDate)consumer.refillDate = new Date(consumer.refillDate)
+    if(consumer.consumptionDaysEstimate) consumer.consumptionDaysEstimate = Number(Math.abs(consumer.consumptionDaysEstimate))
+    if(consumer.refillFive) consumer.refillFive = Number(consumer.refillFive)
+    if(consumer.refillFifty) consumer.refillFifty = Number(consumer.refillFifty)
+    if(consumer.refillTwelve) consumer.refillTwelve = Number(consumer.refillTwelve)
+
+    const updatedConsumer = await prisma.consumer.update({
+      where: {
+        id: consumer.id
+      },
       data: {
         ...consumer,
-      },
-      select: selectedUserField,
+      }
     });
 
     return {
       status: true,
-      data: { user: createdUser },
-      message: "Register Success",
+      data: { user: updatedConsumer },
+      message: "Update Consumer Success",
     };
   } catch (err: unknown) {
     return {
       status: false,
       data: {},
-      message: "Register Failed",
+      message: "Update Consumer Failed",
       error: String(err),
     };
   }

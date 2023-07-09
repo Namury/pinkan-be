@@ -14,7 +14,7 @@ import {
   response_not_found,
   response_success,
 } from "$utils/response.utils";
-import { Request, Response } from "express";
+import { Request, Response, query } from "express";
 
 export async function getConsumer(req: Request, res: Response): Promise<Response> {
   try {
@@ -96,7 +96,7 @@ export async function addConsumer(req: Request, res: Response) {
 
 export async function editConsumer(req: Request, res: Response) {
   try {
-    const consumerData:consumerEdit = req.body
+    const consumerData:consumerEdit = {id: req.params.id, ...req.body, userId: res.locals.jwtPayload.id}
   
     const { status, data, error } = await editConsumerService(consumerData);
     if (status) {
