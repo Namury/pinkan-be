@@ -65,12 +65,16 @@ export async function validateEditConsumerRequest(
     consumerTypeid,
   } = req.body
   const userId = res.locals.jwtPayload.id
-  
+  const id = req.params.id;
+
   if (name){
     const checkUnique = await prisma.consumer.findFirst({
       where: {
+        NOT:{
+          id
+        },
         name,
-        userId
+        userId,
       }
     })
   

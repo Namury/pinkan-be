@@ -25,6 +25,7 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
+      ORDER BY public."Consumer"."updatedAt" DESC
     `;
 
     if(consumers.length === 0){
