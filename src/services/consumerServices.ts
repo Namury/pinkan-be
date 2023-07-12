@@ -62,6 +62,55 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
   }
 }
 
+export async function getConsumerListReminderService(userId: String, isAdmin: boolean, filter:consumerFilter): Promise<response> {
+  try {
+    userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%'
+    
+    if(isAdmin && !filter.userId){
+      userId = '%%' 
+    }
+
+    const name = filter.name?`%${filter.name}%`:'%%'
+    const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
+    const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
+    
+    const consumers = await prisma.$queryRaw<[]>`
+      SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName", 
+      public."User"."shNumber" as "userShNumber", public."User".name as "userName", public."ConsumerType".name as "consumerTypeName" 
+      FROM public."Consumer" 
+      LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
+      LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
+      LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
+      WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
+      AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
+      AND public."Consumer"."consumptionDaysRemaining" >= -7 AND public."Consumer"."isRead" = false
+      ORDER BY public."Consumer"."updatedAt" DESC
+    `;
+    
+    let formattedConsumer:formattedConsumerType[] = []
+    if(filter.export){
+      let nomor = 1
+      consumers.forEach(consumer => {
+        formattedConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
+        nomor++
+      })
+    }
+
+    return {
+      status: true,
+      data: filter.export?formattedConsumer:consumers,
+      message: "Get Consumer List Reminder Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Get Consumer List Reminder Failed",
+      error: String(err),
+    };
+  }
+}
+
 export async function getConsumerByIdService(
   id: string
 ): Promise<response> {
@@ -164,7 +213,7 @@ export async function getConsumerCountService(userId: string, isAdmin: boolean):
 
     const formattedWhere:LooseObject = {
       consumptionDaysRemaining:{
-        lte: 10
+        gte: -7
       }, 
       isRead: false,
       userId

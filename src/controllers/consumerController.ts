@@ -8,6 +8,7 @@ import {
   deleteConsumerService,
   cronJobUpdateConsumptionDaysRemaining,
   getConsumerCountService,
+  getConsumerListReminderService,
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -36,6 +37,23 @@ export async function getConsumer(req: Request, res: Response): Promise<Response
   }
 }
 
+export async function getConsumerReminderList(req: Request, res: Response): Promise<Response> {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const filter = Object(req.query.filter);
+    
+    const { status, data, error } = await getConsumerListReminderService(userId, isAdmin, filter);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_not_found(res, error);
+    }
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
 export async function exportConsumer(req: Request, res: Response): Promise<Response> {
   try {
     const userId = res.locals.jwtPayload.id;
@@ -49,9 +67,9 @@ export async function exportConsumer(req: Request, res: Response): Promise<Respo
       const worksheet = XLSX.utils.json_to_sheet(Object(data));
       XLSX.utils.book_append_sheet(wb, worksheet, "Sheet1");
 
-      const buf = XLSX.write(wb, { type:"buffer", bookType:"xlsx" });
+      const buf = await XLSX.write(wb, { type:"buffer", bookType:"xlsx" });
       res.setHeader('Content-Disposition', `attachment; filename="Consumer Pinkan ${currentTime}.xlsx"`);
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       return res.end(buf);
     } else {
       return response_not_found(res, error);
