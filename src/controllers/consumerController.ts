@@ -7,6 +7,7 @@ import {
   editConsumerService,
   deleteConsumerService,
   cronJobUpdateConsumptionDaysRemaining,
+  getConsumerCountService,
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -100,6 +101,22 @@ export async function getConsumerTypeById(req: Request, res: Response) {
       return response_not_found(res, error);
     }
 
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function getConsumerCount(req: Request, res: Response): Promise<Response> {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+
+    const { status, data, error } = await getConsumerCountService(userId, isAdmin);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_not_found(res, error);
+    }
   } catch (err: unknown) {
     return response_internal_server_error(res, String(err));
   }

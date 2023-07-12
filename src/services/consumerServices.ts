@@ -28,14 +28,14 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       ORDER BY public."Consumer"."updatedAt" DESC
     `;
 
-    if(consumers.length === 0){
-      return {
-        status: false,
-        data: {},
-        message: "Get All Consumer Failed",
-        error: "Data not found"
-      };
-    }
+    // if(consumers.length === 0){
+    //   return {
+    //     status: false,
+    //     data: {},
+    //     message: "Get All Consumer Failed",
+    //     error: "Data not found"
+    //   };
+    // }
 
     
     let formattedConsumer:formattedConsumerType[] = []
@@ -124,6 +124,66 @@ export async function getConsumerTypeByIdService(
       message: "Get Consumer Type by ID Success",
     };
   } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Get Consumer Type by ID Failed",
+      error: String(err),
+    };
+  }
+}
+
+interface LooseObject {
+  [key: string]: any
+}
+
+function camelCase(str: string) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index == 0 ? word.toLowerCase() : word.toUpperCase();
+  }).replace(/\s+/g, '');
+}
+
+export async function getConsumerCountService(userId: string, isAdmin: boolean): Promise<response> {
+  try {
+    const getAllConsumerType = await prisma.consumerType.findMany()
+
+    const usersWithCount:LooseObject = {};
+    for (let index = 0; index < getAllConsumerType.length; index++) {
+      const camelCaseName = camelCase(getAllConsumerType[index].name)
+      const formattedWhere:LooseObject = {
+        consumerTypeid: getAllConsumerType[index].id,
+        userId
+      }
+      if(isAdmin){
+        delete formattedWhere.userId;
+      }
+      usersWithCount[camelCaseName] = await prisma.consumer.count({
+        where: formattedWhere
+      })
+    }
+
+    const formattedWhere:LooseObject = {
+      consumptionDaysRemaining:{
+        lte: 10
+      }, 
+      isRead: false,
+      userId
+    }
+
+    if(isAdmin){
+      delete formattedWhere.userId;
+    }
+
+    const getNotificationCount = await prisma.consumer.count({
+      where: formattedWhere
+    })
+
+    return {
+      status: true,
+      data: { ...usersWithCount, notification: getNotificationCount },
+      message: "Get Consumer Type by ID Success",
+    };
+  } catch (err) {
     return {
       status: false,
       data: {},

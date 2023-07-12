@@ -1,4 +1,6 @@
 import {
+  getUserByIdService,
+  getUserService,
   userLoginService,
   userRegisterService,
 } from "$services/userServices";
@@ -29,6 +31,36 @@ export async function register(req: Request, res: Response) {
     const userData:UserRegister = req.body
   
     const { status, data, error } = await userRegisterService(userData);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_unauthorized(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function getUser(req: Request, res: Response) {
+  try {
+    const { status, data, error } = await getUserService();
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_unauthorized(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function getUserById(req: Request, res: Response) {
+  try {
+    const id = req.params.id;
+
+    const { status, data, error } = await getUserByIdService(id);
     if (status) {
       return response_success(res, data);
     } else {

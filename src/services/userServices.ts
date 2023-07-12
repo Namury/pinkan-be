@@ -99,3 +99,47 @@ export async function userRegisterService(
     };
   }
 }
+
+export async function getUserService(): Promise<response> {
+  try {
+    const user = await prisma.user.findMany();
+
+    return {
+      status: true,
+      data: user,
+      message: "Get User Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Get User Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function getUserByIdService(
+  id: string
+): Promise<response> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      }
+    });
+
+    return {
+      status: true,
+      data: { ...user },
+      message: "Get User by ID Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Get User by ID Failed",
+      error: String(err),
+    };
+  }
+}

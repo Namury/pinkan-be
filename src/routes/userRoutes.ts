@@ -1,6 +1,8 @@
 import {
-    login,
-    register
+  getUser,
+  getUserById,
+  login,
+  register
 } from "$controllers/userController";
 import express from "express";
 import {
@@ -9,11 +11,12 @@ import {
   validateGetAllUserRequest,
   validateGetUserByIdRequest
 } from "$validations/userValidation";
+import { checkJwt } from "$middlewares/authMiddleware";
 
 const userRoutes = express.Router();
 
-// userRoutes.get("/", validateGetAllUserRequest, getAllUser)
-// userRoutes.get("/:id", validateGetUserByIdRequest, getUserById)
+userRoutes.get("/", checkJwt, getUser)
+userRoutes.get("/:id", checkJwt, validateGetUserByIdRequest, getUserById)
 userRoutes.post("/login", validateLoginRequest, login);
 userRoutes.post(
   "/register",
