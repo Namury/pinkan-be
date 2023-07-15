@@ -79,6 +79,31 @@ export async function exportConsumer(req: Request, res: Response): Promise<Respo
   }
 }
 
+export async function exportConsumerListReminder(req: Request, res: Response): Promise<Response> {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const filter = Object(req.query.filter);
+    const currentTime = new Date(Date.now()).toLocaleString('id-ID', { dateStyle: 'long' }).toString();
+    filter.export = true;
+    const { status, data, error } = await getConsumerListReminderService(userId, isAdmin, filter);
+    if (status) {
+      const wb = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(Object(data));
+      XLSX.utils.book_append_sheet(wb, worksheet, "Sheet1");
+
+      const buf = await XLSX.write(wb, { type:"base64", bookType:"csv" });
+      res.setHeader('Content-Disposition', `attachment; filename="List Reminder Consumer Pinkan ${currentTime}.csv"`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      return res.end(buf);
+    } else {
+      return response_not_found(res, error);
+    }
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
 export async function getConsumerById(req: Request, res: Response) {
   try {
     const id = req.params.id;

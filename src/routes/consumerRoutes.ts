@@ -10,6 +10,7 @@ import {
   exportConsumer,
   getConsumerCount,
   getConsumerReminderList,
+  exportConsumerListReminder,
   } from "$controllers/consumerController";
 import express from "express";
 import { checkJwt } from "$middlewares/authMiddleware";
@@ -28,6 +29,7 @@ consumerRoutes.get("/count", checkJwt, getConsumerCount);
 consumerRoutes.get("/export", checkJwt, exportConsumer);
 consumerRoutes.get("/types", checkJwt, getConsumerType);
 consumerRoutes.get("/list-reminder", checkJwt, getConsumerReminderList);
+consumerRoutes.get("/list-reminder/export", checkJwt, exportConsumerListReminder);
 consumerRoutes.get("/bypass-consumption-days-remaining", checkJwt, bypassUpdateConsumptionDaysRemaining);
 consumerRoutes.get("/:id", checkJwt,validateGetConsumerByIdRequest, getConsumerById);
 consumerRoutes.get("/types/:id", checkJwt, validateGetConsumerTypeByIdRequest, getConsumerTypeById);

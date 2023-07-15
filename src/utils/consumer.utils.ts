@@ -106,7 +106,8 @@ export function formatExportConsumer(consumer:consumerDatabaseResponse){
     'Estimasi Hari Konsumsi': consumer.consumptionDaysEstimate,
     'Sisa Hari Konsumsi': consumer.consumptionDaysRemaining,
     'No. Telepon': consumer.phone,
-    'Wilayah Sales': consumer.salesZoneName
+    'Wilayah Sales': consumer.salesZoneName,
+    'Transaksi Terakhir': consumer.updatedAt
   }
 
   return formattedConsumer
