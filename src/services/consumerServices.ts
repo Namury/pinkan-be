@@ -246,12 +246,24 @@ export async function addConsumerService(
   consumer: consumerCreate
 ): Promise<response> {
   try {
-    if(!consumer.consumptionDaysRemaining)
-      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate)
-    
-    consumer.refillDate = new Date(Date.now())
-    if(consumer.refillDate)consumer.refillDate = new Date(consumer.refillDate)
+    let diffDays = 0;
+
+    if(!consumer.refillDate){
+      consumer.refillDate = new Date(Date.now())
+    }
+
+    if(consumer.refillDate) {
+      consumer.refillDate = new Date(consumer.refillDate)
+      const refillDateTime = consumer.refillDate.getTime()
+      const today = new Date()
+      const todayDateTime = today.getTime()
+      const diffTime = todayDateTime - refillDateTime;
+      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; 
+    }
+
     if(consumer.consumptionDaysEstimate) consumer.consumptionDaysEstimate = Number(Math.abs(consumer.consumptionDaysEstimate))
+    if(!consumer.consumptionDaysRemaining)
+      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate) +  diffDays
     if(consumer.refillFive) consumer.refillFive = Number(consumer.refillFive)
     if(consumer.refillFifty) consumer.refillFifty = Number(consumer.refillFifty)
     if(consumer.refillTwelve) consumer.refillTwelve = Number(consumer.refillTwelve)
@@ -282,11 +294,28 @@ export async function editConsumerService(
 ): Promise<response> {
   try {
 
-    if(!consumer.consumptionDaysRemaining && consumer.consumptionDaysEstimate)
-      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate)
+    if(consumer.isAdmin)
+      delete consumer.userId;
+    
+    delete consumer.isAdmin
+    let diffDays = 0;
 
-    if(consumer.refillDate)consumer.refillDate = new Date(consumer.refillDate)
+    if(consumer.refillDate) {
+      consumer.refillDate = new Date(consumer.refillDate)
+      const refillDateTime = consumer.refillDate.getTime()
+      const today = new Date()
+      const todayDateTime = today.getTime()
+      const diffTime = todayDateTime - refillDateTime;
+      diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; 
+
+      if(!consumer.consumptionDaysEstimate)
+        consumer.consumptionDaysRemaining = -diffDays
+    }
+
     if(consumer.consumptionDaysEstimate) consumer.consumptionDaysEstimate = Number(Math.abs(consumer.consumptionDaysEstimate))
+    if(!consumer.consumptionDaysRemaining && consumer.consumptionDaysEstimate)
+      consumer.consumptionDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate) +  diffDays
+
     if(consumer.refillFive) consumer.refillFive = Number(consumer.refillFive)
     if(consumer.refillFifty) consumer.refillFifty = Number(consumer.refillFifty)
     if(consumer.refillTwelve) consumer.refillTwelve = Number(consumer.refillTwelve)

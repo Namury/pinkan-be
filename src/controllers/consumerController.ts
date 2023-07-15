@@ -142,7 +142,9 @@ export async function getConsumerCount(req: Request, res: Response): Promise<Res
 
 export async function addConsumer(req: Request, res: Response) {
   try {
-    const consumerData:consumerCreate = {...req.body, userId: res.locals.jwtPayload.id}
+    const userId = res.locals.jwtPayload.id;
+
+    const consumerData:consumerCreate = {...req.body, userId}
   
     const { status, data, error } = await addConsumerService(consumerData);
     if (status) {
@@ -158,7 +160,9 @@ export async function addConsumer(req: Request, res: Response) {
 
 export async function editConsumer(req: Request, res: Response) {
   try {
-    const consumerData:consumerEdit = {id: req.params.id, ...req.body, userId: res.locals.jwtPayload.id}
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const consumerData:consumerEdit = {id: req.params.id, ...req.body, userId, isAdmin}
   
     const { status, data, error } = await editConsumerService(consumerData);
     if (status) {

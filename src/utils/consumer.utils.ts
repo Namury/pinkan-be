@@ -40,6 +40,7 @@ export interface consumerEdit {
   consumptionDaysRemaining?: number;           
   consumerTypeid?: string;
   userId?: string;
+  isAdmin?: boolean;
 }
 
 export interface consumerResponse {

@@ -64,10 +64,23 @@ export async function validateEditConsumerRequest(
     name,
     consumerTypeid,
   } = req.body
-  const userId = res.locals.jwtPayload.id
+  const userId = res.locals.jwtPayload.id;
+  const isAdmin = res.locals.jwtPayload.isAdmin;
   const id = req.params.id;
 
-  if (name){
+  if(id){
+    const checkConsumer = await prisma.consumer.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if(!checkConsumer){
+      return response_not_found(res, "Consumer ID not Found")
+    }
+  }
+
+  if (name && !isAdmin){
     const checkUnique = await prisma.consumer.findFirst({
       where: {
         NOT:{
@@ -81,19 +94,19 @@ export async function validateEditConsumerRequest(
     if(checkUnique){
       return response_conflict(res, 'Name and User combination already exist')
     }
+  }
 
-    if(consumerTypeid){
-      if( !uuidValidate(consumerTypeid) ) return response_bad_request(res, "Sales Zone Id must be UUID");
-  
-      const checkConsumerTypeid = await prisma.consumerType.findUnique({
-        where: {
-          id: consumerTypeid
-        }
-      })
-  
-      if(!checkConsumerTypeid){
-        return response_not_found(res, "Consumer Type not Found")
+  if(consumerTypeid){
+    if( !uuidValidate(consumerTypeid) ) return response_bad_request(res, "Sales Zone Id must be UUID");
+
+    const checkConsumerTypeid = await prisma.consumerType.findUnique({
+      where: {
+        id: consumerTypeid
       }
+    })
+
+    if(!checkConsumerTypeid){
+      return response_not_found(res, "Consumer Type not Found")
     }
   }
   next();
