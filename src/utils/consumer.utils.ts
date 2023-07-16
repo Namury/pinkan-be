@@ -99,6 +99,8 @@ export function formatExportConsumer(consumer:consumerDatabaseResponse){
     'Jenis Konsumen': consumer.consumerTypeName,
     'Nama Konsumen': consumer.name,
     'Alamat': consumer.address,
+    'Longitude': consumer.longitude,
+    'Latitude': consumer.latitude,
     'Waktu Penebusan': consumer.refillDate,
     'BG 5.5': consumer.refillFive,
     'BG 12': consumer.refillTwelve,
@@ -107,7 +109,7 @@ export function formatExportConsumer(consumer:consumerDatabaseResponse){
     'Sisa Hari Konsumsi': consumer.consumptionDaysRemaining,
     'No. Telepon': consumer.phone,
     'Wilayah Sales': consumer.salesZoneName,
-    'Transaksi Terakhir': consumer.updatedAt
+    'Update Terakhir': consumer.updatedAt
   }
 
   return formattedConsumer

@@ -102,7 +102,17 @@ export async function userRegisterService(
 
 export async function getUserService(): Promise<response> {
   try {
-    const user = await prisma.user.findMany();
+    const selectedUserField = {
+      id: true,
+      shNumber: true,
+      name: true,
+    };
+
+    const user = await prisma.user.findMany({
+      where: {
+        email: null
+      }, select: selectedUserField
+    });
 
     return {
       status: true,
