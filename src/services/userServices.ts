@@ -53,7 +53,7 @@ export async function userLoginService(
         data: userDetails,
       };
     } else {
-      throw new Error("Incorrect");
+      throw new Error("Username/Password Salah");
     }
   } catch (err: unknown) {
     return {
