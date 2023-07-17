@@ -67,8 +67,8 @@ export async function exportConsumer(req: Request, res: Response): Promise<Respo
       const worksheet = XLSX.utils.json_to_sheet(Object(data));
       XLSX.utils.book_append_sheet(wb, worksheet, "Sheet1");
 
-      const buf = await XLSX.write(wb, { type:"base64", bookType:"csv" });
-      res.setHeader('Content-Disposition', `attachment; filename="Consumer Pinkan ${currentTime}.csv"`);
+      const buf = await XLSX.write(wb, { type:"base64", bookType:"xlsx" });
+      res.setHeader('Content-Disposition', `attachment; filename="Consumer Pinkan ${currentTime}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       return res.end(buf);
     } else {
@@ -92,8 +92,8 @@ export async function exportConsumerListReminder(req: Request, res: Response): P
       const worksheet = XLSX.utils.json_to_sheet(Object(data));
       XLSX.utils.book_append_sheet(wb, worksheet, "Sheet1");
 
-      const buf = await XLSX.write(wb, { type:"base64", bookType:"csv" });
-      res.setHeader('Content-Disposition', `attachment; filename="List Reminder Consumer Pinkan ${currentTime}.csv"`);
+      const buf = await XLSX.write(wb, { type:"base64", bookType:"xlsx" });
+      res.setHeader('Content-Disposition', `attachment; filename="List Reminder Consumer Pinkan ${currentTime}.xlsx"`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       return res.end(buf);
     } else {
