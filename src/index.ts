@@ -18,10 +18,10 @@ const allowedOrigins = [
   "http://localhost:3001/",
   "https://pinkan-fe.vercel.app/",
   "https://pinkan-fe.vercel.app",
-  "https://api.pinkan.com/",
-  "https://api.pinkan.com",
-  "https://pinkan.com/",
-  "https://pinkan.com",
+  "https://api.pinkan.id/",
+  "https://api.pinkan.id",
+  "https://pinkan.id/",
+  "https://pinkan.id",
 ];
 
 const options: cors.CorsOptions = {
