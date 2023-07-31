@@ -14,6 +14,13 @@ export interface UserRegister {
   password: string;
 }
 
+export interface UserEdit {
+  name?: string;
+  shNumber?: string;
+  email?:string;
+  password?: string;
+}
+
 export interface UserResponse {
   token: string;
   name: string;

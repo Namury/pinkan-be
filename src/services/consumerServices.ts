@@ -3,6 +3,7 @@ import { response } from "$utils/response.utils";
 import * as XLSX from 'xlsx';
 
 import { consumerCreate, consumerEdit, consumerFilter, consumerResponse, formattedConsumerType, formatExportConsumer } from "$utils/consumer.utils";
+import { LooseObject } from "$utils/common.utils";
 
 export async function getConsumerService(userId:string, isAdmin:boolean, filter:consumerFilter): Promise<response> {
   try {
@@ -180,10 +181,6 @@ export async function getConsumerTypeByIdService(
       error: String(err),
     };
   }
-}
-
-interface LooseObject {
-  [key: string]: any
 }
 
 function camelCase(str: string) {

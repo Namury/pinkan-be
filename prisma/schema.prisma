@@ -3,8 +3,8 @@
 
 generator client {
   provider = "prisma-client-js"
-  output = "../src/generated/client"
-  binaryTargets = ["native", "debian-openssl-1.0.x", "debian-openssl-1.1.x"]
+  // output = "../src/generated/client"
+  // binaryTargets = ["native", "debian-openssl-1.0.x", "debian-openssl-1.1.x"]
 }
 
 datasource db {
@@ -27,12 +27,44 @@ model User {
 }
 
 model SalesZone {
-  id          String      @unique @default(uuid())
-  name        String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String      @unique @default(uuid())
+  name          String
+  cityCode      String?
+  City          City?       @relation(fields: [cityCode], references: [code])
+  provinceCode  String
+  Province      Province    @relation(fields: [provinceCode], references: [code])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  User        User[]
+  User          User[]
+}
+
+model Province {
+  id              String      @unique @default(uuid())
+  code            String      @unique
+  name            String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  City            City[]
+  SalesZone       SalesZone[]
+
+  @@id([id, code])
+}
+
+model City {
+  id              String      @unique @default(uuid())
+  code            String      @unique
+  name            String
+  provinceCode    String
+  Province        Province    @relation(fields: [provinceCode], references: [code])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  SalesZone       SalesZone[]
+  Consumer        Consumer[]
+  
+  @@id([id, code])  
 }
 
 model Consumer {
@@ -42,6 +74,8 @@ model Consumer {
   phone                     String        @unique
   latitude                  String
   longitude                 String
+  cityCode                  String
+  City                      City          @relation(fields: [cityCode], references: [code])
   refillDate                DateTime      @default(now())
   refillFive                Int           @default(0)
   refillTwelve              Int           @default(0)

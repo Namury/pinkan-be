@@ -35,7 +35,7 @@ export async function validateGetUserByIdRequest(
   })
 
   if(!checkUserId){
-    return response_not_found(res, "Sales Zone not Found")
+    return response_not_found(res, "User not Found")
   }
   next();
 }
@@ -101,5 +101,90 @@ export async function validateRegisterRequest(
     }
   }
   if (!password) return response_bad_request(res, "Password is required");
+  next();
+}
+
+export async function validateEditRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const id = req.params.id;
+  const {shNumber, email } = req.body;
+  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  if (shNumber){
+    const checkShNumber = await prisma.user.findFirst({
+      where: {
+        NOT:{
+          id
+        },
+        shNumber
+      }
+    })
+
+    if(checkShNumber){
+      return response_conflict(res, 'SH Number already exist')
+    }
+  }
+
+  if (email){
+    if (!validateEmail(email))
+      return response_bad_request(res, "Email provided is not a correct form");
+      
+    const checkEmail = await prisma.user.findFirst({
+      where: {
+        NOT:{
+          id
+        },
+        email
+      }
+    })
+    
+    if(checkEmail){
+      return response_conflict(res, 'Email already exist')
+    }
+  }
+  next();
+}
+export async function validateEditLoggedInUserRequest(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const id = res.locals.jwtPayload.id;
+  const {shNumber, email } = req.body;
+  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  if (shNumber){
+    const checkShNumber = await prisma.user.findFirst({
+      where: {
+        NOT:{
+          id
+        },
+        shNumber
+      }
+    })
+
+    if(checkShNumber){
+      return response_conflict(res, 'SH Number already exist')
+    }
+  }
+
+  if (email){
+    if (!validateEmail(email))
+      return response_bad_request(res, "Email provided is not a correct form");
+      
+    const checkEmail = await prisma.user.findFirst({
+      where: {
+        NOT:{
+          id
+        },
+        email
+      }
+    })
+    
+    if(checkEmail){
+      return response_conflict(res, 'Email already exist')
+    }
+  }
   next();
 }

@@ -112,7 +112,7 @@ export async function validateEditConsumerRequest(
   next();
 }
 
-export function validateDeleteConsumerRequest(
+export async function validateDeleteConsumerRequest(
   req: Request,
   res: Response,
   next: NextFunction
@@ -122,6 +122,16 @@ export function validateDeleteConsumerRequest(
   if (!id) return response_bad_request(res, "id is required");
   
   if( !uuidValidate(id) ) return response_bad_request(res, "Consumer Type Id must be UUID");
+
+  const checkConsumer = await prisma.consumer.findUnique({
+    where: {
+      id
+    }
+  })
+
+  if(!checkConsumer){
+    return response_not_found(res, "Consumer ID not Found")
+  }
   next();
 }
 

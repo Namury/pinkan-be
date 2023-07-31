@@ -1,5 +1,5 @@
 import { prisma } from "$utils/prisma.utils";
-import { UserRegister, UserResponse, UserToken } from "$utils/user.utils";
+import { UserRegister, UserEdit, UserResponse, UserToken } from "$utils/user.utils";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
@@ -95,6 +95,96 @@ export async function userRegisterService(
       status: false,
       data: {},
       message: "Register Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function editUserService(
+  user: UserEdit,
+  userId: string
+): Promise<response> {
+  try {
+    const selectedUserField = {
+      id: true,
+      shNumber: true,
+      salesZoneId: true,
+      email: true,
+      name: true,
+    };
+
+    console.log("password", user.password);
+    console.log("id", userId);
+    if(user.password){
+      user.password = await bcrypt.hash(user.password, 12);
+    }
+
+    const editedUser = await prisma.user.update({
+      where:{
+        id: userId
+      },
+      data: {
+        ...user,
+      },
+      select: selectedUserField,
+    });
+    const token = createToken({...editedUser, isAdmin: editedUser.email ? true : false});
+
+    return {
+      status: true,
+      data: { user: editedUser, token },
+      message: "Edit User Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Edit User Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function editLoggedInUserService(
+  user: UserEdit,
+  userId: string
+): Promise<response> {
+  try {
+    const selectedUserField = {
+      id: true,
+      shNumber: true,
+      salesZoneId: true,
+      email: true,
+      name: true,
+    };
+
+    console.log("password", user.password);
+    console.log("id", userId);
+    if(user.password){
+      user.password = await bcrypt.hash(user.password, 12);
+    }
+
+    const editedUser = await prisma.user.update({
+      where:{
+        id: userId
+      },
+      data: {
+        ...user,
+      },
+      select: selectedUserField,
+    });
+    const token = createToken({...editedUser, isAdmin: editedUser.email ? true : false});
+
+    return {
+      status: true,
+      data: { user: editedUser, token },
+      message: "Edit User Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Edit User Failed",
       error: String(err),
     };
   }

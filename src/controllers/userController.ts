@@ -1,6 +1,8 @@
 import {
   getUserByIdService,
   getUserService,
+  editUserService,
+  editLoggedInUserService,
   userLoginService,
   userRegisterService,
 } from "$services/userServices";
@@ -9,7 +11,7 @@ import {
   response_success,
   response_unauthorized,
 } from "$utils/response.utils";
-import { UserRegister } from "$utils/user.utils";
+import { UserEdit, UserRegister } from "$utils/user.utils";
 import { Request, Response } from "express";
 
 export async function login(req: Request, res: Response): Promise<Response> {
@@ -31,6 +33,40 @@ export async function register(req: Request, res: Response) {
     const userData:UserRegister = req.body
   
     const { status, data, error } = await userRegisterService(userData);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_unauthorized(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function editUser(req: Request, res: Response) {
+  try {
+    const userId = req.params.id;
+    const userData:UserEdit = req.body
+  
+    const { status, data, error } = await editUserService(userData, userId);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_unauthorized(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function editLoggedInUser(req: Request, res: Response) {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const userData:UserEdit = req.body
+  
+    const { status, data, error } = await editLoggedInUserService(userData, userId);
     if (status) {
       return response_success(res, data);
     } else {

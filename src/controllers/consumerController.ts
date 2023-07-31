@@ -17,7 +17,7 @@ import {
   response_not_found,
   response_success,
 } from "$utils/response.utils";
-import { Request, Response, json, query } from "express";
+import { Request, Response } from "express";
 import * as XLSX from 'xlsx';
 
 export async function getConsumer(req: Request, res: Response): Promise<Response> {

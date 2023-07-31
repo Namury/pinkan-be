@@ -6,6 +6,7 @@ export interface consumerCreate {
   phone: string;        
   latitude: string;
   longitude: string;
+  cityCode: string;
   refillDate: Date;
   refillFive?: number;           
   refillTwelve?: number;           
@@ -31,6 +32,7 @@ export interface consumerEdit {
   phone?: string;        
   latitude?: string;
   longitude?: string;
+  cityCode: string;
   refillDate?: Date;
   refillFive?: number;           
   refillTwelve?: number;           
