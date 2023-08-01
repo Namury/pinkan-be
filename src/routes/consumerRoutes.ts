@@ -29,6 +29,7 @@ consumerRoutes.get("/count", checkJwt, getConsumerCount);
 consumerRoutes.get("/export", checkJwt, exportConsumer);
 consumerRoutes.get("/types", checkJwt, getConsumerType);
 consumerRoutes.get("/list-reminder", checkJwt, getConsumerReminderList);
+consumerRoutes.get("/list-reminder/count", checkJwt, exportConsumerListReminder);
 consumerRoutes.get("/list-reminder/export", checkJwt, exportConsumerListReminder);
 consumerRoutes.get("/bypass-consumption-days-remaining", checkJwt, bypassUpdateConsumptionDaysRemaining);
 consumerRoutes.get("/:id", checkJwt,validateGetConsumerByIdRequest, getConsumerById);

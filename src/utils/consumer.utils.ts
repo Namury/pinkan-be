@@ -67,6 +67,8 @@ export interface formattedConsumerType {
   'Sisa Hari Konsumsi': number;
   'No. Telepon': string;
   'Wilayah Sales': string;
+  'Provinsi': string,
+  'Kota/Kabupaten': string,
 }
 
 interface consumerDatabaseResponse {
@@ -92,6 +94,8 @@ interface consumerDatabaseResponse {
   userShNumber: string;
   consumerTypeName: string;
   salesZoneName: string;
+  provinceName: string;
+  cityName: string;
 }
 
 export function formatExportConsumer(consumer:consumerDatabaseResponse){
@@ -111,6 +115,8 @@ export function formatExportConsumer(consumer:consumerDatabaseResponse){
     'Sisa Hari Konsumsi': consumer.consumptionDaysRemaining,
     'No. Telepon': consumer.phone,
     'Wilayah Sales': consumer.salesZoneName,
+    'Provinsi': consumer.provinceName,
+    'Kota/Kabupaten': consumer.cityName,
     'Update Terakhir': consumer.updatedAt
   }
 
