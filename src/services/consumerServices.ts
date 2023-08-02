@@ -19,15 +19,15 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
     
     const consumers = await prisma.$queryRaw<[]>`
       SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName",
-      public."SalesZone".*, public."Province".name as "provinceName", public."City".name as "cityName"
+      public."Province".name as "provinceName", public."City".name as "cityName",
       public."User"."shNumber" as "userShNumber", public."User".name as "userName", 
-      public."ConsumerType".name as "consumerTypeName" 
+      public."ConsumerType".name as "consumerTypeName"
       FROM public."Consumer" 
       LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
       LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."CityCode"
+      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."cityCode"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
       ORDER BY public."Consumer"."updatedAt" DESC
@@ -80,14 +80,16 @@ export async function getConsumerListReminderService(userId: String, isAdmin: bo
     const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
     
     const consumers = await prisma.$queryRaw<[]>`
-      SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName", 
-      public."User"."shNumber" as "userShNumber", public."User".name as "userName", public."ConsumerType".name as "consumerTypeName" 
+      SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName",
+      public."Province".name as "provinceName", public."City".name as "cityName",
+      public."User"."shNumber" as "userShNumber", public."User".name as "userName", 
+      public."ConsumerType".name as "consumerTypeName"
       FROM public."Consumer" 
       LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
       LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."CityCode"
+      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."cityCode"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
       AND public."Consumer"."consumptionDaysRemaining" >= -7 AND public."Consumer"."isRead" = false
