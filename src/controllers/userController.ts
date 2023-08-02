@@ -2,7 +2,6 @@ import {
   getUserByIdService,
   getUserService,
   editUserService,
-  editLoggedInUserService,
   userLoginService,
   userRegisterService,
 } from "$services/userServices";
@@ -66,7 +65,7 @@ export async function editLoggedInUser(req: Request, res: Response) {
     const userId = res.locals.jwtPayload.id;
     const userData:UserEdit = req.body
   
-    const { status, data, error } = await editLoggedInUserService(userData, userId);
+    const { status, data, error } = await editUserService(userData, userId);
     if (status) {
       return response_success(res, data);
     } else {
@@ -95,6 +94,22 @@ export async function getUser(req: Request, res: Response) {
 export async function getUserById(req: Request, res: Response) {
   try {
     const id = req.params.id;
+
+    const { status, data, error } = await getUserByIdService(id);
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_unauthorized(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function getUserByLoggedInUser(req: Request, res: Response) {
+  try {
+    const id = res.locals.jwtPayload.id;
 
     const { status, data, error } = await getUserByIdService(id);
     if (status) {

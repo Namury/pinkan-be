@@ -3,7 +3,7 @@ import { UUID } from "crypto";
 export interface UserToken {
   id: string;
   shNumber: string|null;
-  isAdmin: boolean;
+  isAdmin: number;
 }
 
 export interface UserRegister {
@@ -25,5 +25,5 @@ export interface UserResponse {
   token: string;
   name: string;
   shNumber: string;
-  isAdmin?: boolean | null;
+  isAdmin?: number;
 }

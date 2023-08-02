@@ -34,18 +34,14 @@ export async function userLoginService(
       where: condition,
     });
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = createToken({...user, isAdmin: user.email ? true : false});
+      const token = createToken({...user, isAdmin: user.email ? user.salesZoneId? 1 : 2 : 0});
       const userDetails: UserResponse = {
         token: token,
         name: user.name,
         shNumber: user.shNumber? user.shNumber :"",
       };
-
-      if(user.email){
-        userDetails.isAdmin = true;
-      } else {
-        userDetails.isAdmin = false;
-      }
+      
+      userDetails.isAdmin = user.email ? user.salesZoneId? 1 : 2 : 0
 
       return {
         status: true,
@@ -71,9 +67,10 @@ export async function userRegisterService(
   try {
     const selectedUserField = {
       id: true,
+      name: true,
       shNumber: true,
       email: true,
-      name: true,
+      salesZoneId: true
     };
     user.password = await bcrypt.hash(user.password, 12);
 
@@ -83,7 +80,7 @@ export async function userRegisterService(
       },
       select: selectedUserField,
     });
-    const token = createToken({...createdUser, isAdmin: createdUser.email ? true : false});
+    const token = createToken({...createdUser, isAdmin: createdUser.email ? createdUser.salesZoneId? 1 : 2 : 0});
 
     return {
       status: true,
@@ -107,16 +104,20 @@ export async function editUserService(
   try {
     const selectedUserField = {
       id: true,
-      shNumber: true,
-      salesZoneId: true,
-      email: true,
       name: true,
+      shNumber: true,
+      email: true,
+      salesZoneId: true,
     };
 
-    console.log("password", user.password);
-    console.log("id", userId);
     if(user.password){
       user.password = await bcrypt.hash(user.password, 12);
+    } else{
+      delete user.password;
+    }
+
+    if(!user.shNumber){
+      delete user.shNumber;
     }
 
     const editedUser = await prisma.user.update({
@@ -128,56 +129,9 @@ export async function editUserService(
       },
       select: selectedUserField,
     });
-    const token = createToken({...editedUser, isAdmin: editedUser.email ? true : false});
-
     return {
       status: true,
-      data: { user: editedUser, token },
-      message: "Edit User Success",
-    };
-  } catch (err: unknown) {
-    return {
-      status: false,
-      data: {},
-      message: "Edit User Failed",
-      error: String(err),
-    };
-  }
-}
-
-export async function editLoggedInUserService(
-  user: UserEdit,
-  userId: string
-): Promise<response> {
-  try {
-    const selectedUserField = {
-      id: true,
-      shNumber: true,
-      salesZoneId: true,
-      email: true,
-      name: true,
-    };
-
-    console.log("password", user.password);
-    console.log("id", userId);
-    if(user.password){
-      user.password = await bcrypt.hash(user.password, 12);
-    }
-
-    const editedUser = await prisma.user.update({
-      where:{
-        id: userId
-      },
-      data: {
-        ...user,
-      },
-      select: selectedUserField,
-    });
-    const token = createToken({...editedUser, isAdmin: editedUser.email ? true : false});
-
-    return {
-      status: true,
-      data: { user: editedUser, token },
+      data: { ...editedUser },
       message: "Edit User Success",
     };
   } catch (err: unknown) {
@@ -226,6 +180,12 @@ export async function getUserByIdService(
     const user = await prisma.user.findUnique({
       where: {
         id,
+      }, select: {
+        id: true,
+        name: true,
+        shNumber: true,
+        email: true,
+        salesZoneId: true
       }
     });
 

@@ -7,14 +7,14 @@ import { LooseObject } from "$utils/common.utils";
 
 export async function getConsumerService(userId:string, isAdmin:boolean, filter:consumerFilter): Promise<response> {
   try {
-    userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%'
-    
+    let salesZoneId = '%%';
     if(isAdmin && !filter.userId){
+      userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%'
+      salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
       userId = '%%' 
     }
 
     const name = filter.name?`%${filter.name}%`:'%%'
-    const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
     const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
     
     const consumers = await prisma.$queryRaw<[]>`
