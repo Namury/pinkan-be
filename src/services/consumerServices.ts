@@ -28,6 +28,7 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
       LEFT JOIN public."City" ON public."City".code = public."SalesZone"."cityCode"
+      LEFT JOIN public."City"  ON public."City".code = public."Consumer"."cityCode"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
       ORDER BY public."Consumer"."updatedAt" DESC
@@ -235,6 +236,83 @@ export async function getConsumerCountService(userId: string, isAdmin: boolean):
     return {
       status: true,
       data: { ...usersWithCount, notification: getNotificationCount },
+      message: "Get Consumer Type by ID Success",
+    };
+  } catch (err) {
+    return {
+      status: false,
+      data: {},
+      message: "Get Consumer Type by ID Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function getConsumerReminderListCountService(userId: string, isAdmin: number, salesZoneId: string): Promise<response> {
+  try {
+    let salesZone;
+    let cityFilter:LooseObject = {
+      City: {
+        code: '',
+        Province:{
+          code: ''
+        }
+      }
+    };
+    if(isAdmin != 2){
+      salesZone = await prisma.salesZone.findUnique({
+        where: {
+          id: salesZoneId
+        }
+      })
+
+      if(salesZone){
+        if(salesZone.cityCode){
+          cityFilter.City.code = salesZone.cityCode;
+        }else {
+          delete cityFilter.City.code;
+        }
+
+        if(salesZone.provinceCode){
+          cityFilter.City.Province.code = salesZone.provinceCode;
+        }else{
+          delete cityFilter.City.Province.code
+        }
+      }
+    }
+
+    const dayRanges = [
+      {name: 'underThreeDays', query: {gte: -7, lte: -3}}, 
+      {name: 'zeroDay', query: {gte: -2, lte: 0}}, 
+      {name: 'threeDays', query: {gte: 1, lte: 3}}, 
+      {name: 'sevenDays', query: {gte: 4, lte: 7}}, 
+      {name: 'tenDays', query: {gte: 8, lte: 10}}, 
+      {name: 'tenMoreDays', query: {gt: 10}}
+    ]
+
+    const usersWithCount:LooseObject = {};
+    for (let index = 0; index < dayRanges.length; index++) {
+      const formattedWhere:LooseObject = {
+        consumptionDaysRemaining: dayRanges[index].query,
+        userId,
+        ...cityFilter
+      }
+      if(isAdmin){
+        delete formattedWhere.userId;
+      }
+
+      if(isAdmin == 2){
+        delete formattedWhere.City;
+      }
+
+      usersWithCount[dayRanges[index].name] = await prisma.consumer.count({
+        where: formattedWhere
+      })
+    }
+
+    return {
+      status: true,
+      data: { ...usersWithCount },
       message: "Get Consumer Type by ID Success",
     };
   } catch (err) {

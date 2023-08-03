@@ -2,6 +2,7 @@ import { UUID } from "crypto";
 
 export interface UserToken {
   id: string;
+  salesZoneId: string|null;
   shNumber: string|null;
   isAdmin: number;
 }
@@ -25,5 +26,7 @@ export interface UserResponse {
   token: string;
   name: string;
   shNumber: string;
+  salesZoneId: string|null,
+  provinceCode: string|null,
   isAdmin?: number;
 }

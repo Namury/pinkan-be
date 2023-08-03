@@ -7,7 +7,10 @@ import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {
   const token = jwt.sign(
-    { id: user.id, shNumber: user.shNumber? user.shNumber: null, isAdmin: user.isAdmin },
+    { id: user.id,
+      salesZoneId: user.salesZoneId, 
+      shNumber: user.shNumber? user.shNumber: null, 
+      isAdmin: user.isAdmin },
     process.env.JWT_SECRET_TOKEN?.toString() || "",
     {
       expiresIn: "24h",
@@ -32,11 +35,16 @@ export async function userLoginService(
 
     const user = await prisma.user.findUnique({
       where: condition,
+      include: {
+        SalesZone: true
+      }
     });
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = createToken({...user, isAdmin: user.email ? user.salesZoneId? 1 : 2 : 0});
       const userDetails: UserResponse = {
         token: token,
+        salesZoneId: user.salesZoneId,
+        provinceCode: user.SalesZone? user.SalesZone.provinceCode: null,
         name: user.name,
         shNumber: user.shNumber? user.shNumber :"",
       };
@@ -70,7 +78,8 @@ export async function userRegisterService(
       name: true,
       shNumber: true,
       email: true,
-      salesZoneId: true
+      salesZoneId: true,
+      SalesZone: true
     };
     user.password = await bcrypt.hash(user.password, 12);
 
@@ -108,6 +117,7 @@ export async function editUserService(
       shNumber: true,
       email: true,
       salesZoneId: true,
+      SalesZone: true
     };
 
     if(user.password){
@@ -185,7 +195,8 @@ export async function getUserByIdService(
         name: true,
         shNumber: true,
         email: true,
-        salesZoneId: true
+        salesZoneId: true,
+        SalesZone: true
       }
     });
 
