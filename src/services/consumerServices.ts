@@ -27,7 +27,6 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."cityCode"
       LEFT JOIN public."City"  ON public."City".code = public."Consumer"."cityCode"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
@@ -90,7 +89,7 @@ export async function getConsumerListReminderService(userId: String, isAdmin: bo
       LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
       LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
       LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City" ON public."City".code = public."SalesZone"."cityCode"
+      LEFT JOIN public."City" ON public."City".code = public."Consumer"."cityCode"
       WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
       AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
       AND public."Consumer"."consumptionDaysRemaining" >= -7 AND public."Consumer"."isRead" = false
