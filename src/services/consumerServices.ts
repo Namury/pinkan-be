@@ -2,36 +2,72 @@ import { prisma } from "$utils/prisma.utils";
 import { response } from "$utils/response.utils";
 import * as XLSX from 'xlsx';
 
-import { consumerCreate, consumerEdit, consumerFilter, consumerResponse, formattedConsumerType, formatExportConsumer } from "$utils/consumer.utils";
+import { consumerCreate, consumerEdit, consumerFilter, consumerResponse, formattedConsumerExportType, formatExportConsumer, consumerHistoryData, formatHistoryConsumer, formattedConsumerHistoryType, formatResponseConsumer, formattedConsumerResponseType } from "$utils/consumer.utils";
 import { LooseObject } from "$utils/common.utils";
 
-export async function getConsumerService(userId:string, isAdmin:boolean, filter:consumerFilter): Promise<response> {
+export async function getConsumerService(userId:string, isAdmin:number, filter:consumerFilter): Promise<response> {
   try {
-    userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%';
-    
-    if(isAdmin && !filter.userId){
-      userId = '%%';
+    if(!isAdmin){
+      delete filter.salesZoneId;
+      delete filter.userId;
     }
 
-    const name = filter.name?`%${filter.name}%`:'%%'
-    const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
-    const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
+    if(isAdmin){
+      if(isAdmin == 1){
+        delete filter.salesZoneId;
 
-    const consumers = await prisma.$queryRaw<[]>`
-      SELECT public."Consumer".*, public."User"."id", public."User"."salesZoneId", public."SalesZone".name as "salesZoneName",
-      public."Province".name as "provinceName", public."City".name as "cityName",
-      public."User"."shNumber" as "userShNumber", public."User".name as "userName", 
-      public."ConsumerType".name as "consumerTypeName"
-      FROM public."Consumer" 
-      LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
-      LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
-      LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
-      LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City"  ON public."City".code = public."Consumer"."cityCode"
-      WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
-      AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
-      ORDER BY public."Consumer"."updatedAt" DESC
-    `;
+        const findSalesZone = await prisma.user.findUnique({
+          where: { id: userId }
+        })
+        if(findSalesZone && findSalesZone.salesZoneId) filter.salesZoneId = findSalesZone.salesZoneId
+  
+      }
+
+      const findCompatibleUser = await prisma.user.findMany({
+        where:{
+          id: filter.userId?filter.userId:undefined,
+          email: null,
+          salesZoneId: filter.salesZoneId?filter.salesZoneId:undefined
+        }
+      })
+      if(!findCompatibleUser) delete filter.userId
+    }
+
+    let nameSearch:[{id: string}];
+    let nameSearchId:Array<string> = []
+    if(filter.name){
+      
+      let userIdParams = filter.userId?`%${filter.userId}%`: !isAdmin ? `%${userId}%` : '%%';
+      nameSearch = await prisma.$queryRaw<[{id:string}]>`
+        SELECT public."Consumer".id
+        FROM public."Consumer" 
+        WHERE "userId" ILIKE ${userIdParams} AND public."Consumer"."name" ILIKE ${`%${filter.name}%`}
+      `;
+
+      nameSearchId = nameSearch.map(consumer => {
+        return consumer.id
+      })
+    }
+
+    const formattedWhere:LooseObject = {
+      id: filter.name?{ in: nameSearchId }:undefined,
+      userId: filter.userId?filter.userId:!isAdmin?userId:undefined,
+      cityCode: filter.cityCode?filter.cityCode:undefined,
+      consumerTypeid: filter.consumerTypeId?filter.consumerTypeId:undefined,
+      consumptionDaysRemaining: filter.listReminder?{gte: -7}:undefined,
+      User: filter.salesZoneId? {
+        salesZoneId: filter.salesZoneId
+      }: undefined
+    }
+
+    const consumers = await prisma.consumer.findMany({
+      where: formattedWhere, 
+      include: {
+        User: { select:{ name: true, shNumber:true, salesZoneId: true, SalesZone: true } },
+        ConsumerType: { select: { name: true } },
+        City: { select: { name: true, Province: { select: {name: true } } } }
+      }
+    })
 
     // if(consumers.length === 0){
     //   return {
@@ -43,18 +79,23 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
     // }
 
     
-    let formattedConsumer:formattedConsumerType[] = []
+    let formattedExportConsumer:formattedConsumerExportType[] = []
+    let formattedConsumer:formattedConsumerResponseType[] = []
     if(filter.export){
       let nomor = 1
       consumers.forEach(consumer => {
-        formattedConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
+        formattedExportConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
         nomor++
+      })
+    }else {
+      consumers.forEach(consumer => {
+        formattedConsumer.push({...formatResponseConsumer(consumer)});
       })
     }
 
     return {
       status: true,
-      data: filter.export?formattedConsumer:consumers,
+      data: filter.export?formattedConsumer:formattedConsumer,
       message: "Get All Consumer Success",
     };
   } catch (err: unknown) {
@@ -62,59 +103,6 @@ export async function getConsumerService(userId:string, isAdmin:boolean, filter:
       status: false,
       data: {},
       message: "Get All Consumer Failed",
-      error: String(err),
-    };
-  }
-}
-
-export async function getConsumerListReminderService(userId: String, isAdmin: boolean, filter:consumerFilter): Promise<response> {
-  try {
-    userId = filter.userId?`%${filter.userId}%`: userId ? `%${userId}%` : '%%'
-    
-    if(isAdmin && !filter.userId){
-      userId = '%%' 
-    }
-
-    const name = filter.name?`%${filter.name}%`:'%%'
-    const salesZoneId = filter.salesZoneId?`%${filter.salesZoneId}%`:'%%'
-    const consumerTypeId = filter.consumerTypeId?`%${filter.consumerTypeId}%`:'%%'
-    
-    const consumers = await prisma.$queryRaw<[]>`
-      SELECT public."Consumer".*, public."User"."salesZoneId", public."SalesZone".name as "salesZoneName",
-      public."Province".name as "provinceName", public."City".name as "cityName",
-      public."User"."shNumber" as "userShNumber", public."User".name as "userName", 
-      public."ConsumerType".name as "consumerTypeName"
-      FROM public."Consumer" 
-      LEFT JOIN public."User" ON public."User".id = public."Consumer"."userId"
-      LEFT JOIN public."ConsumerType" ON public."ConsumerType".id = public."Consumer"."consumerTypeid"
-      LEFT JOIN public."SalesZone" ON public."SalesZone".id = public."User"."salesZoneId"
-      LEFT JOIN public."Province" ON public."Province".code = public."SalesZone"."provinceCode"
-      LEFT JOIN public."City" ON public."City".code = public."Consumer"."cityCode"
-      WHERE "userId" ILIKE ${userId} AND public."Consumer"."name" ILIKE ${name} AND public."User"."salesZoneId" ILIKE ${salesZoneId}
-      AND public."Consumer"."consumerTypeid" ILIKE ${consumerTypeId}
-      AND public."Consumer"."consumptionDaysRemaining" >= -7 AND public."Consumer"."isRead" = false
-      ORDER BY public."Consumer"."updatedAt" DESC
-    `;
-    
-    let formattedConsumer:formattedConsumerType[] = []
-    if(filter.export){
-      let nomor = 1
-      consumers.forEach(consumer => {
-        formattedConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
-        nomor++
-      })
-    }
-
-    return {
-      status: true,
-      data: filter.export?formattedConsumer:consumers,
-      message: "Get Consumer List Reminder Success",
-    };
-  } catch (err: unknown) {
-    return {
-      status: false,
-      data: {},
-      message: "Get Consumer List Reminder Failed",
       error: String(err),
     };
   }
@@ -142,6 +130,71 @@ export async function getConsumerByIdService(
       status: false,
       data: {},
       message: "Get consumer by ID Failed",
+      error: String(err),
+    };
+  }
+}
+
+async function addConsumerHistory(consumerHistoryData:consumerHistoryData): Promise<response>{
+  try {
+    const consumerHistory = await prisma.consumerHistory.create({
+      data:{
+        ...consumerHistoryData
+      }
+    })
+
+    return {
+      status: true,
+      data: { consumerHistory },
+      message: "Create Consumer History Success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Create Consumer History Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function updateConsumerHistory(): Promise<response> {
+  try {
+    const consumers = await prisma.consumer.findMany({
+      include: {
+
+      }
+    })
+
+    
+    let formattedConsumer:formattedConsumerHistoryType[] = []
+    consumers.forEach(consumer => {
+      formattedConsumer.push({...formatHistoryConsumer(consumer)});
+    })
+
+    const updateConsumer = await prisma.consumer.updateMany({
+      where: {
+        consumptionDaysRemaining : {
+          lte: 10
+        },
+      },
+      data:{
+        consumptionDaysRemaining: {
+          increment: 1
+        }
+      }
+    })
+
+    return {
+      status: true,
+      data: { updateConsumer },
+      message: "Update consumer consumption days remaining success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Update consumer consumption days remaining success Failed",
       error: String(err),
     };
   }

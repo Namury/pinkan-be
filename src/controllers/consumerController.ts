@@ -8,7 +8,6 @@ import {
   deleteConsumerService,
   cronJobUpdateConsumptionDaysRemaining,
   getConsumerCountService,
-  getConsumerListReminderService,
   getConsumerReminderListCountService
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
@@ -43,8 +42,9 @@ export async function getConsumerReminderList(req: Request, res: Response): Prom
     const userId = res.locals.jwtPayload.id;
     const isAdmin = res.locals.jwtPayload.isAdmin;
     const filter = Object(req.query.filter);
+    filter.listReminder = true;
     
-    const { status, data, error } = await getConsumerListReminderService(userId, isAdmin, filter);
+    const { status, data, error } = await getConsumerService(userId, isAdmin, filter);
     if (status) {
       return response_success(res, data);
     } else {
@@ -87,7 +87,8 @@ export async function exportConsumerListReminder(req: Request, res: Response): P
     const filter = Object(req.query.filter);
     const currentTime = new Date(Date.now()).toLocaleString('id-ID', { dateStyle: 'long' }).toString();
     filter.export = true;
-    const { status, data, error } = await getConsumerListReminderService(userId, isAdmin, filter);
+    filter.listReminder = true;
+    const { status, data, error } = await getConsumerService(userId, isAdmin, filter);
     if (status) {
       const wb = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(Object(data));

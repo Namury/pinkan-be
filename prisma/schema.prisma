@@ -13,17 +13,18 @@ datasource db {
 }
 
 model User {
-  id            String      @unique @default(uuid())
-  name          String      
-  shNumber      String?     @unique
-  email         String?     @unique
-  salesZoneId   String?
-  SalesZone     SalesZone?  @relation(fields: [salesZoneId], references: [id])
-  password      String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id              String      @unique @default(uuid())
+  name            String      
+  shNumber        String?     @unique
+  email           String?     @unique
+  salesZoneId     String?
+  SalesZone       SalesZone?  @relation(fields: [salesZoneId], references: [id])
+  password        String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   
-  Consumer    Consumer[]
+  Consumer        Consumer[]
+  ConsumerHistory ConsumerHistory[]
 }
 
 model SalesZone {
@@ -63,6 +64,7 @@ model City {
   
   SalesZone       SalesZone[]
   Consumer        Consumer[]
+  ConsumerHistory ConsumerHistory[]
   
   @@id([id, code])  
 }
@@ -89,13 +91,69 @@ model Consumer {
   User                      User          @relation(fields: [userId], references: [id])
   createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
+
+  ConsumerHistory           ConsumerHistory[]
+  // ConsumerSalesHistory      ConsumerSalesHistory[]
 }
 
-model ConsumerType {
-  id        String     @unique @default(uuid())
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model ConsumerHistory {
+  id                        String        @unique @default(uuid())
+  consumerId                String
+  Consumer                  Consumer      @relation(fields: [consumerId], references: [id])
+  name                      String
+  address                   String
+  phone                     String
+  latitude                  String
+  longitude                 String
+  cityCode                  String
+  City                      City          @relation(fields: [cityCode], references: [code])
+  refillDate                DateTime      @default(now())
+  refillFive                Int           @default(0)
+  refillTwelve              Int           @default(0)
+  refillFifty               Int           @default(0)
+  isRead                    Boolean       @default(false)
+  consumptionDaysEstimate   Int           @default(0)
+  consumptionDaysRemaining  Int           @default(0)
+  consumerTypeid            String
+  ConsumerType              ConsumerType  @relation(fields: [consumerTypeid], references: [id])
+  userId                    String
+  User                      User          @relation(fields: [userId], references: [id])
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+}
 
-  Consumer Consumer[]
+// model ConsumerSalesHistory {
+//   id                        String        @unique @default(uuid())
+//   consumerId                String
+//   Consumer                  Consumer      @relation(fields: [consumerId], references: [id])
+//   name                      String
+//   address                   String
+//   phone                     String        @unique
+//   latitude                  String
+//   longitude                 String
+//   cityCode                  String
+//   City                      City          @relation(fields: [cityCode], references: [code])
+//   refillDate                DateTime      @default(now())
+//   refillFive                Int           @default(0)
+//   refillTwelve              Int           @default(0)
+//   refillFifty               Int           @default(0)
+//   isRead                    Boolean       @default(false)
+//   consumptionDaysEstimate   Int           @default(0)
+//   consumptionDaysRemaining  Int           @default(0)
+//   consumerTypeid            String
+//   ConsumerType              ConsumerType  @relation(fields: [consumerTypeid], references: [id])
+//   userId                    String
+//   User                      User          @relation(fields: [userId], references: [id])
+//   createdAt                 DateTime      @default(now())
+//   updatedAt                 DateTime      @updatedAt
+// }
+
+model ConsumerType {
+  id              String     @unique @default(uuid())
+  name            String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  Consumer        Consumer[]
+  ConsumerHistory ConsumerHistory[]
 }

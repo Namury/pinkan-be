@@ -1,5 +1,64 @@
 import { UUID } from "crypto";
-import { Consumer } from "@prisma/client";
+
+interface consumer {
+  id: string
+  name: string
+  address: string
+  phone: string
+  latitude: string
+  longitude: string
+  cityCode: string
+  refillDate: Date
+  refillFive: number
+  refillTwelve: number
+  refillFifty: number
+  isRead: boolean
+  consumptionDaysEstimate: number
+  consumptionDaysRemaining: number
+  consumerTypeid: string
+  userId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface consumerWithInclude {
+  id: string
+  name: string
+  address: string
+  phone: string
+  latitude: string
+  longitude: string
+  cityCode: string
+  City: {
+    name: string,
+    Province: {
+      name: string
+    }
+  }
+  refillDate: Date
+  refillFive: number
+  refillTwelve: number
+  refillFifty: number
+  isRead: boolean
+  consumptionDaysEstimate: number
+  consumptionDaysRemaining: number
+  consumerTypeid: string
+  ConsumerType: {
+    name: string
+  }
+  userId: string
+  User: {
+    name: string,
+    salesZoneId: string|null,
+    shNumber: string|null,
+    SalesZone: {
+      name: string
+    }|null
+  },
+  createdAt: Date
+  updatedAt: Date
+}
+
 export interface consumerCreate {
   name: string;
   address: string;
@@ -18,11 +77,13 @@ export interface consumerCreate {
 }
 
 export interface consumerFilter {
-  userId: string;
-  salesZoneId: string;
-  consumerTypeId: string;
-  name: string;
-  export: boolean;
+  userId?: string;
+  salesZoneId?: string;
+  consumerTypeId?: string;
+  cityCode?: string;
+  name?: string;
+  export?: boolean;
+  listReminder?: boolean;
 }
 
 export interface consumerEdit {
@@ -52,10 +113,28 @@ export interface consumerResponse {
   isAdmin?: boolean | null;
 }
 
-export interface formattedConsumerType {
+export interface formattedConsumerHistoryType {
+  consumerId: string
+  name: string
+  address: string
+  phone: string
+  latitude: string
+  longitude: string
+  cityCode: string
+  refillDate: Date
+  refillFive: number
+  refillTwelve: number
+  refillFifty: number
+  isRead: boolean
+  consumptionDaysEstimate: number
+  consumptionDaysRemaining: number
+  consumerTypeid: string
+  userId: string
+}
+export interface formattedConsumerExportType {
   'No.': number;
   'Nama Agen': string;
-  'No SH Agen': string;
+  'No SH Agen': string|null;
   'Jenis Konsumen': string;
   'Nama Konsumen': string;
   'Alamat': string;
@@ -66,12 +145,12 @@ export interface formattedConsumerType {
   'Estimasi Hari Konsumsi': number;
   'Sisa Hari Konsumsi': number;
   'No. Telepon': string;
-  'Wilayah Sales': string;
+  'Wilayah Sales': string|null;
   'Provinsi': string,
   'Kota/Kabupaten': string,
 }
 
-interface consumerDatabaseResponse {
+export interface formattedConsumerResponseType {
   id: string;
   name: string;
   address: string;
@@ -89,20 +168,91 @@ interface consumerDatabaseResponse {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-  salesZoneId: string;
+  salesZoneId: string|null;
   userName: string;
-  userShNumber: string;
+  userShNumber: string|null;
   consumerTypeName: string;
-  salesZoneName: string;
+  salesZoneName: string|null;
   provinceName: string;
   cityName: string;
 }
 
-export function formatExportConsumer(consumer:consumerDatabaseResponse){
+export type consumerHistoryData = {
+  consumerId: string
+  name: string
+  address: string
+  phone: string
+  latitude: string
+  longitude: string
+  cityCode: string
+  refillDate: Date
+  refillFive: number
+  refillTwelve: number
+  refillFifty: number
+  isRead: boolean
+  consumptionDaysEstimate: number
+  consumptionDaysRemaining: number
+  consumerTypeid: string
+  userId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export function formatResponseConsumer(consumer:consumerWithInclude){
+  return{
+    id: consumer.id,
+    name: consumer.name,
+    address: consumer.address,
+    latitude: consumer.latitude,
+    longitude: consumer.longitude,
+    consumerTypeid: consumer.consumerTypeid,
+    userId: consumer.userId,
+    createdAt: consumer.createdAt,
+    updatedAt: consumer.updatedAt,
+    refillDate: consumer.refillDate,
+    refillFifty: consumer.refillFifty,
+    refillFive: consumer.refillFive,
+    refillTwelve: consumer.refillTwelve,
+    isRead: consumer.isRead,
+    phone: consumer.phone,
+    consumptionDaysEstimate: consumer.consumptionDaysEstimate,
+    consumptionDaysRemaining: consumer.consumptionDaysRemaining,
+    cityCode: consumer.cityCode,
+    salesZoneId: consumer.User.salesZoneId,
+    salesZoneName: consumer.User.SalesZone?consumer.User.SalesZone.name: null,
+    provinceName: consumer.City.Province.name,
+    cityName: consumer.City.name,
+    userShNumber: consumer.User.shNumber,
+    userName: consumer.User.name,
+    consumerTypeName: consumer.ConsumerType.name,
+  }
+}
+export function formatHistoryConsumer(consumer:consumer){
+  return {
+    consumerId: consumer.id,
+    name: consumer.name,
+    address: consumer.address,
+    phone: consumer.phone,
+    latitude: consumer.latitude,
+    longitude: consumer.longitude,
+    cityCode: consumer.cityCode,
+    refillDate: consumer.refillDate,
+    refillFive: consumer.refillFive,
+    refillTwelve: consumer.refillTwelve,
+    refillFifty: consumer.refillFifty,
+    isRead: consumer.isRead,
+    consumptionDaysEstimate: consumer.consumptionDaysEstimate,
+    consumptionDaysRemaining: consumer.consumptionDaysRemaining,
+    consumerTypeid: consumer.consumerTypeid,
+    userId: consumer.userId,
+  }
+}
+
+export function formatExportConsumer(consumer:consumerWithInclude){
   const formattedConsumer = {
-    'Nama Agen': consumer.userName,
-    'No SH Agen': consumer.userShNumber,
-    'Jenis Konsumen': consumer.consumerTypeName,
+    'Nama Agen': consumer.User.name,
+    'No SH Agen': consumer.User.shNumber? consumer.User.shNumber: null,
+    'Jenis Konsumen': consumer.ConsumerType.name,
     'Nama Konsumen': consumer.name,
     'Alamat': consumer.address,
     'Longitude': consumer.longitude,
@@ -114,9 +264,9 @@ export function formatExportConsumer(consumer:consumerDatabaseResponse){
     'Estimasi Hari Konsumsi': consumer.consumptionDaysEstimate,
     'Sisa Hari Konsumsi': consumer.consumptionDaysRemaining,
     'No. Telepon': consumer.phone,
-    'Wilayah Sales': consumer.salesZoneName,
-    'Provinsi': consumer.provinceName,
-    'Kota/Kabupaten': consumer.cityName,
+    'Wilayah Sales': consumer.User.SalesZone? consumer.User.SalesZone.name: null,
+    'Provinsi': consumer.City.Province.name,
+    'Kota/Kabupaten': consumer.City.name,
     'Update Terakhir': consumer.updatedAt
   }
 

@@ -62,6 +62,7 @@ export async function validateEditConsumerRequest(
 ) {
   const {
     name,
+  phone,
     consumerTypeid,
   } = req.body
   const userId = res.locals.jwtPayload.id;
@@ -96,6 +97,21 @@ export async function validateEditConsumerRequest(
     }
   }
 
+  if(phone) {
+    const checkUniquePhone = await prisma.consumer.findFirst({
+      where: {
+        NOT:{
+          id
+        },
+        phone
+      }
+    })
+  
+    if(checkUniquePhone){
+      return response_conflict(res, 'Phone Number already exist')
+    }
+    
+  }
   if(consumerTypeid){
     if( !uuidValidate(consumerTypeid) ) return response_bad_request(res, "Sales Zone Id must be UUID");
 
@@ -166,6 +182,16 @@ export async function validateAddConsumerRequest(
 
   if(!address) return response_bad_request(res, "address is Required")
   if(!phone) return response_bad_request(res, "phone is Required")
+  const checkUniquePhone = await prisma.consumer.findUnique({
+    where: {
+      phone
+    }
+  })
+
+  if(checkUniquePhone){
+    return response_conflict(res, 'Phone Number already exist')
+  }
+
   if(!latitude) return response_bad_request(res, "latitude is Required")  
   if(!longitude) return response_bad_request(res, "longitude is Required")
   // if(!refillDate) return response_bad_request(res, "refillDate is Required")
