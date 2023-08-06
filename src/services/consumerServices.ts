@@ -250,36 +250,50 @@ function camelCase(str: string) {
   }).replace(/\s+/g, '');
 }
 
-export async function getConsumerCountService(userId: string, isAdmin: boolean): Promise<response> {
+export async function getConsumerCountService(userId: string, isAdmin: number): Promise<response> {
   try {
     const getAllConsumerType = await prisma.consumerType.findMany()
 
     const usersWithCount:LooseObject = {};
+
+    const formattedWhere:LooseObject = {
+      userId
+    }
+
+    if(isAdmin){
+      let salesZoneId = undefined;
+      if(isAdmin == 1){
+        const findSalesZone = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {salesZoneId: true}
+        })
+        if(findSalesZone && findSalesZone.salesZoneId) salesZoneId = findSalesZone.salesZoneId
+      }
+      const findCompatibleUser = await prisma.user.findMany({
+        where:{
+          email: null,
+          salesZoneId: salesZoneId
+        }
+      })
+
+      let compatibleUserId = findCompatibleUser.map(user => {
+        return user.id
+      })
+
+      formattedWhere.userId = { in: compatibleUserId }
+    }
+
     for (let index = 0; index < getAllConsumerType.length; index++) {
       const camelCaseName = camelCase(getAllConsumerType[index].name)
-      const formattedWhere:LooseObject = {
-        consumerTypeid: getAllConsumerType[index].id,
-        userId
-      }
-      if(isAdmin){
-        delete formattedWhere.userId;
-      }
+      formattedWhere.consumerTypeid = getAllConsumerType[index].id;
       usersWithCount[camelCaseName] = await prisma.consumer.count({
         where: formattedWhere
       })
     }
 
-    const formattedWhere:LooseObject = {
-      consumptionDaysRemaining:{
-        gte: -7
-      }, 
-      isRead: false,
-      userId
-    }
-
-    if(isAdmin){
-      delete formattedWhere.userId;
-    }
+    formattedWhere.consumerTypeid = undefined
+    formattedWhere.consumptionDaysRemaining = { gte: -7 };
+    formattedWhere.isRead =  false;
 
     const getNotificationCount = await prisma.consumer.count({
       where: formattedWhere
