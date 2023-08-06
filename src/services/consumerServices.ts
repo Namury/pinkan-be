@@ -95,7 +95,7 @@ export async function getConsumerService(userId:string, isAdmin:number, filter:c
 
     return {
       status: true,
-      data: filter.export?formattedConsumer:formattedConsumer,
+      data: filter.export?formattedExportConsumer:formattedConsumer,
       message: "Get All Consumer Success",
     };
   } catch (err: unknown) {
