@@ -1,12 +1,12 @@
-import { cronJobUpdateConsumptionDaysRemaining } from '$services/consumerServices';
+import { cronJobUpdateConsumptionDaysRemaining, cronJobUpdateConsumerWeeklyHistory } from '$services/consumerServices';
 import { CronJob } from 'cron';
 import { log } from 'console';
 
-export const updateConsumptionDays = (pattern = '0 0 * * *') => {
-    log('cron1 started')
+export const addWeeklyHistory = (pattern = '50 23 * * *') => {
+    log('cron2 started')
     const cronJobUpdate = new CronJob(pattern, async () =>{
-        log('Cronjob1 triggered')
-    const { status, data, error } = await cronJobUpdateConsumptionDaysRemaining();
+        log('Cronjob2 triggered')
+    const { status, data, error } = await cronJobUpdateConsumerWeeklyHistory();
     if (status) {
         log("ConsumptionDaysRemaining Successfully Updated", data)
     } else {
@@ -16,10 +16,10 @@ export const updateConsumptionDays = (pattern = '0 0 * * *') => {
     return cronJobUpdate;
 };
 
-export const addWeeklyHistory = (pattern = '0 1 * * *') => {
-    log('cron2 started')
+export const updateConsumptionDays = (pattern = '0 0 * * *') => {
+    log('cron1 started')
     const cronJobUpdate = new CronJob(pattern, async () =>{
-        log('Cronjob2 triggered')
+        log('Cronjob1 triggered')
     const { status, data, error } = await cronJobUpdateConsumptionDaysRemaining();
     if (status) {
         log("ConsumptionDaysRemaining Successfully Updated", data)

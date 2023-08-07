@@ -135,71 +135,6 @@ export async function getConsumerByIdService(
   }
 }
 
-async function addConsumerHistory(consumerHistoryData:consumerHistoryData): Promise<response>{
-  try {
-    const consumerHistory = await prisma.consumerHistory.create({
-      data:{
-        ...consumerHistoryData
-      }
-    })
-
-    return {
-      status: true,
-      data: { consumerHistory },
-      message: "Create Consumer History Success",
-    };
-  } catch (err: unknown) {
-    return {
-      status: false,
-      data: {},
-      message: "Create Consumer History Failed",
-      error: String(err),
-    };
-  }
-}
-
-export async function updateConsumerHistory(): Promise<response> {
-  try {
-    const consumers = await prisma.consumer.findMany({
-      include: {
-
-      }
-    })
-
-    
-    let formattedConsumer:formattedConsumerHistoryType[] = []
-    consumers.forEach(consumer => {
-      formattedConsumer.push({...formatHistoryConsumer(consumer)});
-    })
-
-    const updateConsumer = await prisma.consumer.updateMany({
-      where: {
-        consumptionDaysRemaining : {
-          lte: 10
-        },
-      },
-      data:{
-        consumptionDaysRemaining: {
-          increment: 1
-        }
-      }
-    })
-
-    return {
-      status: true,
-      data: { updateConsumer },
-      message: "Update consumer consumption days remaining success",
-    };
-  } catch (err: unknown) {
-    return {
-      status: false,
-      data: {},
-      message: "Update consumer consumption days remaining success Failed",
-      error: String(err),
-    };
-  }
-}
-
 export async function getConsumerTypeService(): Promise<response> {
   try {
     const consumerType = await prisma.consumerType.findMany();
@@ -541,7 +476,58 @@ export async function cronJobUpdateConsumptionDaysRemaining(): Promise<response>
     return {
       status: false,
       data: {},
-      message: "Update consumer consumption days remaining success Failed",
+      message: "Update consumer consumption days remaining Failed",
+      error: String(err),
+    };
+  }
+}
+
+export async function cronJobUpdateConsumerWeeklyHistory(): Promise<response> {
+  try {
+    const today = new Date(Date.now());
+    const todayMidnight = new Date(Date.now());
+    today.setHours(0, 0, 0, 0);
+    todayMidnight.setHours(23, 59, 59, 999);
+
+    const consumers = await prisma.consumer.findMany()
+
+    const todayHistory = await prisma.consumerHistory.findMany({
+      select:{
+        consumerId: true
+      },
+      where:{
+        createdAt: {
+          gte: today,
+          lte: todayMidnight
+        }
+      }
+    })
+
+    const todayHistoryConsumerIds = todayHistory.map(consumer => {
+      return consumer.consumerId
+    })
+
+    let formattedConsumer:formattedConsumerHistoryType[] = []
+    consumers.map(consumer => {
+      if(!todayHistoryConsumerIds.includes(consumer.id)){
+        formattedConsumer.push({...formatHistoryConsumer(consumer)});
+      }
+    })
+
+    const createdConsumerHistory = await prisma.consumerHistory.createMany({
+      data: formattedConsumer
+    })
+
+    return {
+      status: true,
+      data: createdConsumerHistory,
+      message: "Update consumer history success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Update consumer history Failed",
       error: String(err),
     };
   }

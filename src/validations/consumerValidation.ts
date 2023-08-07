@@ -9,6 +9,11 @@ function validateEmail(email: string): boolean {
   return re.test(email);
 }
 
+function validatePhone(phone: string): boolean {
+  const re =/^\\d+$/;
+  return re.test(phone);
+}
+
 export async function validateGetConsumerByIdRequest(
   req: Request,
   res: Response,
@@ -98,6 +103,9 @@ export async function validateEditConsumerRequest(
   }
 
   if(phone) {
+    if (!validatePhone(phone))
+      return response_bad_request(res, "Format Nomor Handphone yang Anda masukkan belum sesuai");
+  
     const checkUniquePhone = await prisma.consumer.findFirst({
       where: {
         NOT:{
@@ -182,6 +190,10 @@ export async function validateAddConsumerRequest(
 
   if(!address) return response_bad_request(res, "address is Required")
   if(!phone) return response_bad_request(res, "phone is Required")
+
+  if (!validatePhone(phone))
+    return response_bad_request(res, "Format Nomor Handphone yang Anda masukkan belum sesuai");
+  
   const checkUniquePhone = await prisma.consumer.findUnique({
     where: {
       phone
