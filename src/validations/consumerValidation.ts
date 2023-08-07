@@ -10,7 +10,7 @@ function validateEmail(email: string): boolean {
 }
 
 function validatePhone(phone: string): boolean {
-  const re =/^\\d+$/;
+  const re =/^\d+$/;
   return re.test(phone);
 }
 
