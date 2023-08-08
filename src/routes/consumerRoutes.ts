@@ -13,6 +13,7 @@ import {
   getConsumerReminderListCount,
   exportConsumerListReminder,
   bypassUpdateConsumerWeeklyHistory,
+  exportConsumerWeeklyHistory,
   } from "$controllers/consumerController";
 import express from "express";
 import { checkJwt } from "$middlewares/authMiddleware";
@@ -29,6 +30,7 @@ const consumerRoutes = express.Router();
 consumerRoutes.get("/", checkJwt, getConsumer);
 consumerRoutes.get("/count", checkJwt, getConsumerCount);
 consumerRoutes.get("/export", checkJwt, exportConsumer);
+consumerRoutes.get("/export/weekly", checkJwt, exportConsumerWeeklyHistory);
 consumerRoutes.get("/types", checkJwt, getConsumerType);
 consumerRoutes.get("/list-reminder", checkJwt, getConsumerReminderList);
 consumerRoutes.get("/list-reminder/count", checkJwt, getConsumerReminderListCount);

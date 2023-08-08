@@ -108,6 +108,75 @@ export async function getConsumerService(userId:string, isAdmin:number, filter:c
   }
 }
 
+export async function getConsumerHistoryService(
+  userId:string, 
+  isAdmin:number,
+  currentDate: Date,
+){
+  try {
+    let findSalesZone
+    const today = new Date(currentDate);
+    const todayMidnight = new Date(currentDate);
+    today.setHours(0, 0, 0, 0);
+    todayMidnight.setHours(23, 59, 59, 999);
+    if(isAdmin){
+      if(isAdmin == 1){
+        findSalesZone = await prisma.user.findUnique({
+          where: { id: userId }
+        })
+      }
+    }
+
+    const formattedWhere:LooseObject = {
+      userId: !isAdmin?userId:undefined,
+      User: findSalesZone? {
+        salesZoneId: findSalesZone.salesZoneId
+      }: undefined,
+      createdAt: {
+        gte: today,
+        lte: todayMidnight
+      }
+    }
+
+    const consumers = await prisma.consumerHistory.findMany({
+      where: formattedWhere, 
+      include: {
+        User: { select:{ name: true, shNumber:true, salesZoneId: true, SalesZone: true } },
+        ConsumerType: { select: { name: true } },
+        City: { select: { name: true, Province: { select: {name: true } } } }
+      }
+    })
+    
+    let formattedExportConsumer:formattedConsumerExportType[] = []
+    let nomor = 1
+    if(consumers.length){
+      consumers.forEach(consumer => {
+        formattedExportConsumer.push({'No.': nomor, ...formatExportConsumer(consumer)});
+        nomor++
+      })
+    }else{
+      return {
+        status: false,
+        data: {},
+        message: "Get Consumer History Failed",
+      };
+    }
+
+    return {
+      status: true,
+      data: formattedExportConsumer,
+      message: "Get Consumer History Success",
+    };    
+  } catch (err:unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Get Consumer History Failed",
+      error: String(err),
+    };
+  }
+}
+
 export async function getConsumerByIdService(
   id: string
 ): Promise<response> {

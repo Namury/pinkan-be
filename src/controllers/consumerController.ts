@@ -9,7 +9,8 @@ import {
   cronJobUpdateConsumptionDaysRemaining,
   getConsumerCountService,
   getConsumerReminderListCountService,
-  cronJobUpdateConsumerWeeklyHistory
+  cronJobUpdateConsumerWeeklyHistory,
+  getConsumerHistoryService
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -102,6 +103,93 @@ export async function exportConsumerListReminder(req: Request, res: Response): P
     } else {
       return response_not_found(res, error);
     }
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+function getSevenDaysBefore(current:Date) {
+  var week= [];
+  for (var i = 0; i < 7; i++) {
+      week.push(
+          new Date(current)
+      ); 
+      current.setDate(current.getDate() - 1);
+  }
+  return week; 
+}
+
+export async function exportConsumerWeeklyHistory(req: Request, res: Response): Promise<Response> {
+  try {
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const currentTime = new Date(Date.now()).toLocaleString('id-ID', { dateStyle: 'long' }).toString();
+    const currentWeek = getSevenDaysBefore(new Date(Date.now()))
+
+    const wb = XLSX.utils.book_new();
+    const { status, data } = await getConsumerService(userId, isAdmin, {export: true});
+    if (status) {
+      const worksheet = XLSX.utils.json_to_sheet(Object(data));
+      XLSX.utils.book_append_sheet(wb, worksheet, currentTime);
+    } else {
+      const worksheet = XLSX.utils.json_to_sheet(Object([{
+        'No.': undefined,
+        'Nama Agen': undefined,
+        'No SH Agen': undefined,
+        'Jenis Konsumen': undefined,
+        'Nama Konsumen': undefined,
+        'Alamat': undefined,
+        'Longitude': undefined,
+        'Latitude': undefined,
+        'Waktu Penebusan': undefined,
+        'BG 5.5': undefined,
+        'BG 12': undefined,
+        'BG 50': undefined,
+        'Estimasi Hari Konsumsi': undefined,
+        'Sisa Hari Konsumsi': undefined,
+        'No. Telepon': undefined,
+        'Wilayah Sales': undefined,
+        'Provinsi': undefined,
+        'Kota/Kabupaten': undefined,
+        'Update Terakhir': undefined
+      }]));
+      XLSX.utils.book_append_sheet(wb, worksheet, currentTime);
+    }
+    for (var i = 1; i < 7; i++) {
+      const { status, data } = await getConsumerHistoryService(userId, isAdmin, currentWeek[i]);
+      if (status) {
+        const worksheet = XLSX.utils.json_to_sheet(Object(data));
+        XLSX.utils.book_append_sheet(wb, worksheet, currentWeek[i].toLocaleString('id-ID', { dateStyle: 'long' }).toString());
+      } else {
+        const worksheet = XLSX.utils.json_to_sheet(Object([{
+          'No.': undefined,
+          'Nama Agen': undefined,
+          'No SH Agen': undefined,
+          'Jenis Konsumen': undefined,
+          'Nama Konsumen': undefined,
+          'Alamat': undefined,
+          'Longitude': undefined,
+          'Latitude': undefined,
+          'Waktu Penebusan': undefined,
+          'BG 5.5': undefined,
+          'BG 12': undefined,
+          'BG 50': undefined,
+          'Estimasi Hari Konsumsi': undefined,
+          'Sisa Hari Konsumsi': undefined,
+          'No. Telepon': undefined,
+          'Wilayah Sales': undefined,
+          'Provinsi': undefined,
+          'Kota/Kabupaten': undefined,
+          'Update Terakhir': undefined
+        }]));
+        XLSX.utils.book_append_sheet(wb, worksheet, currentWeek[i].toLocaleString('id-ID', { dateStyle: 'long' }).toString());
+      }
+    }
+    const buf = await XLSX.write(wb, { type:"base64", bookType:"xlsx" });
+    res.setHeader('Content-Disposition', `attachment; filename="History Consumer Pinkan ${currentTime}.xlsx"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    return res.end(buf);
+
   } catch (err: unknown) {
     return response_internal_server_error(res, String(err));
   }
