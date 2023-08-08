@@ -3,10 +3,14 @@ import { Request, NextFunction, Response } from "express";
 import { validate as uuidValidate } from 'uuid'
 import { prisma } from "$utils/prisma.utils";
 
-function validateEmail(email: string): boolean {
-  const re =
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(email);
+function validateLatitude(latitude: string): boolean {
+  const re = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,20})?))$/;
+  return re.test(latitude);
+}
+
+function validateLongitude(longitude: string): boolean {
+  const re = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,20})?))$/;
+  return re.test(longitude);
 }
 
 function validatePhone(phone: string): boolean {
@@ -67,8 +71,10 @@ export async function validateEditConsumerRequest(
 ) {
   const {
     name,
-  phone,
+    phone,
     consumerTypeid,
+    latitude,
+    longitude
   } = req.body
   const userId = res.locals.jwtPayload.id;
   const isAdmin = res.locals.jwtPayload.isAdmin;
@@ -132,6 +138,16 @@ export async function validateEditConsumerRequest(
     if(!checkConsumerTypeid){
       return response_not_found(res, "Consumer Type not Found")
     }
+  }
+
+  if(latitude){
+    if (!validateLatitude(latitude))
+      return response_bad_request(res, "Format Latitude Anda tidak sesuai (terdapat koma/huruf/karakter lain)");
+  }
+
+  if(longitude){
+    if (!validateLongitude(longitude))
+      return response_bad_request(res, "Format Longitude Anda tidak sesuai (terdapat koma/huruf/karakter lain)");
   }
   next();
 }
@@ -205,7 +221,12 @@ export async function validateAddConsumerRequest(
   }
 
   if(!latitude) return response_bad_request(res, "latitude is Required")  
+  if (!validateLatitude(latitude))
+    return response_bad_request(res, "Format Latitude Anda tidak sesuai (terdapat koma/huruf/karakter lain)");
+ 
   if(!longitude) return response_bad_request(res, "longitude is Required")
+  if (!validateLongitude(longitude))
+    return response_bad_request(res, "Format Longitude Anda tidak sesuai (terdapat koma/huruf/karakter lain)");
   // if(!refillDate) return response_bad_request(res, "refillDate is Required")
   if(!consumptionDaysEstimate) return response_bad_request(res, "consumptionDaysEstimate is Required")
   if (!consumerTypeid) return response_bad_request(res, "Consumer Type is required");

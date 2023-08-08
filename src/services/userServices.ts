@@ -154,19 +154,33 @@ export async function editUserService(
   }
 }
 
-export async function getUserService(): Promise<response> {
+export async function getUserService(userId: string, isAdmin: number): Promise<response> {
   try {
     const selectedUserField = {
       id: true,
       shNumber: true,
       name: true,
     };
-
+    
+    if(!isAdmin){
+      return {
+        status: true,
+        data: [],
+        message: "Get User Success",
+      }
+    }
+    
+    const findSalesZone = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {salesZoneId: true}
+    })
+    
     const user = await prisma.user.findMany({
-      where: {
-        email: null
+      where:{
+        email: null,
+        salesZoneId: findSalesZone?.salesZoneId?findSalesZone.salesZoneId:undefined
       }, select: selectedUserField
-    });
+    })
 
     return {
       status: true,

@@ -79,7 +79,9 @@ export async function editLoggedInUser(req: Request, res: Response) {
 
 export async function getUser(req: Request, res: Response) {
   try {
-    const { status, data, error } = await getUserService();
+    const userId = res.locals.jwtPayload.id;
+    const isAdmin = res.locals.jwtPayload.isAdmin;
+    const { status, data, error } = await getUserService(userId, isAdmin);
     if (status) {
       return response_success(res, data);
     } else {
