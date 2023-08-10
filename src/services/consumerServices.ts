@@ -523,22 +523,37 @@ export async function deleteConsumerService(
 
 export async function cronJobUpdateConsumptionDaysRemaining(): Promise<response> {
   try {
-    const updateConsumer = await prisma.consumer.updateMany({
+    const today = new Date(Date.now())
+    const todayDateTime = today.getTime()
+    const consumers = await prisma.consumer.findMany({
       where: {
         consumptionDaysRemaining : {
-          lte: 10
+          lte: 20
         },
-      },
-      data:{
-        consumptionDaysRemaining: {
-          increment: 1
-        }
       }
     })
 
+    const resMap = consumers.map(async (consumer) => {
+      const refillDateTime = consumer.refillDate.getTime()
+      const diffTime = todayDateTime - refillDateTime;
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; 
+      let currentDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate) +  diffDays
+      const updatedUser = await prisma.consumer.update({
+        where:{
+          id: consumer.id
+        },data: {
+          consumptionDaysRemaining: currentDaysRemaining
+        }
+      })
+
+      return updatedUser
+    });
+
+    const result = (await Promise.all(resMap)).length;
+    
     return {
       status: true,
-      data: { updateConsumer },
+      data: {result},
       message: "Update consumer consumption days remaining success",
     };
   } catch (err: unknown) {
