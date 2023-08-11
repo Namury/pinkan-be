@@ -566,6 +566,64 @@ export async function cronJobUpdateConsumptionDaysRemaining(): Promise<response>
   }
 }
 
+export async function updateConsumptionDaysRemainingHistoryService(date: Date): Promise<response> {
+  try {
+    const today = new Date(date);
+    const todayMidnight = new Date(date);
+    const todayDateTime = date.getTime()
+    today.setHours(0, 0, 0, 0);
+    todayMidnight.setHours(23, 59, 59, 999);
+
+    const consumers = await prisma.consumerHistory.findMany({
+      select:{
+        id: true,
+        refillDate: true,
+        consumptionDaysEstimate: true
+      },
+      where:{
+        consumptionDaysRemaining : {
+          lte: 20
+        },
+        createdAt: {
+          gte: today,
+          lte: todayMidnight
+        }
+      }
+    })
+
+    const resMap = consumers.map(async (consumer) => {
+      const refillDateTime = consumer.refillDate.getTime()
+      const diffTime = todayDateTime - refillDateTime;
+      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1; 
+      let currentDaysRemaining = -Math.abs(consumer.consumptionDaysEstimate) +  diffDays
+      const updatedUser = await prisma.consumerHistory.update({
+        where:{
+          id: consumer.id
+        },data: {
+          consumptionDaysRemaining: currentDaysRemaining
+        }
+      })
+
+      return updatedUser
+    });
+
+    const result = (await Promise.all(resMap)).length;
+    
+    return {
+      status: true,
+      data: {result},
+      message: "Update consumer consumption days remaining History success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Update consumer consumption days remaining History failed",
+      error: String(err),
+    };
+  }
+}
+
 export async function cronJobUpdateConsumerWeeklyHistory(): Promise<response> {
   try {
     const today = new Date(Date.now());

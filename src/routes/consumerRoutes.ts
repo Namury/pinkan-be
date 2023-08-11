@@ -7,6 +7,7 @@ import {
   editConsumer,
   deleteConsumer,
   bypassUpdateConsumptionDaysRemaining,
+  bypassUpdateConsumptionDaysRemainingHistory,
   exportConsumer,
   getConsumerCount,
   getConsumerReminderList,
@@ -36,6 +37,7 @@ consumerRoutes.get("/list-reminder", checkJwt, getConsumerReminderList);
 consumerRoutes.get("/list-reminder/count", checkJwt, getConsumerReminderListCount);
 consumerRoutes.get("/list-reminder/export", checkJwt, exportConsumerListReminder);
 consumerRoutes.get("/bypass-consumption-days-remaining", bypassUpdateConsumptionDaysRemaining);
+consumerRoutes.get("/bypass-consumption-days-remaining-history", bypassUpdateConsumptionDaysRemainingHistory);
 consumerRoutes.get("/bypass-update-consumer-weekly-history", bypassUpdateConsumerWeeklyHistory);
 consumerRoutes.get("/:id", checkJwt,validateGetConsumerByIdRequest, getConsumerById);
 consumerRoutes.get("/types/:id", checkJwt, validateGetConsumerTypeByIdRequest, getConsumerTypeById);

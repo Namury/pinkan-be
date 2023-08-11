@@ -10,7 +10,8 @@ import {
   getConsumerCountService,
   getConsumerReminderListCountService,
   cronJobUpdateConsumerWeeklyHistory,
-  getConsumerHistoryService
+  getConsumerHistoryService,
+  updateConsumptionDaysRemainingHistoryService
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -333,6 +334,27 @@ export async function bypassUpdateConsumptionDaysRemaining(req: Request, res: Re
     } else {
       return response_bad_request(res, error);
     }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function bypassUpdateConsumptionDaysRemainingHistory(req: Request, res: Response) {
+  try {
+    const currentWeek = getSevenDaysBefore(new Date(Date.now()))
+
+    let response = []
+    for (var i = 0; i < 7; i++) {
+      const { status, data, error } = await updateConsumptionDaysRemainingHistoryService(currentWeek[i]);
+      if (status) {
+        response.push({...data, date: currentWeek[i]})
+      } else {
+        return response_bad_request(res, error);
+      }
+    }
+
+    return response_success(res, response);
 
   } catch (err: unknown) {
     return response_internal_server_error(res, String(err));
