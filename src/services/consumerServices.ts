@@ -66,6 +66,8 @@ export async function getConsumerService(userId:string, isAdmin:number, filter:c
         User: { select:{ name: true, shNumber:true, salesZoneId: true, SalesZone: true } },
         ConsumerType: { select: { name: true } },
         City: { select: { name: true, Province: { select: {name: true } } } }
+      }, orderBy: {
+        updatedAt: 'desc'
       }
     })
 
