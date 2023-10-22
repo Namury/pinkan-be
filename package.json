@@ -26,6 +26,7 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/module-alias": "^2.0.1",
     "@types/node": "^20.3.1",
+    "@types/nodemailer": "^6.4.11",
     "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^5.59.11",
     "@typescript-eslint/parser": "^5.59.11",
@@ -48,6 +49,7 @@
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
     "module-alias": "^2.2.3",
+    "nodemailer": "^6.9.6",
     "uuid": "^9.0.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/xlsx-0.20.0.tgz"
   }

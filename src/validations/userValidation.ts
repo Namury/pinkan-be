@@ -61,7 +61,7 @@ export async function validateRegisterRequest(
 
   if (!name) return response_bad_request(res, "Name is required");
   if (!shNumber && !email) return response_bad_request(res, "SH Number Or Email is required");
-  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  // if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
   if (shNumber){
     const checkShNumber = await prisma.user.findUnique({
       where: {
@@ -111,7 +111,7 @@ export async function validateEditRequest(
 ) {
   const id = req.params.id;
   const {shNumber, email } = req.body;
-  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  // if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
   if (shNumber){
     const checkShNumber = await prisma.user.findFirst({
       where: {

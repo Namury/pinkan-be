@@ -3,6 +3,8 @@ import { UserRegister, UserEdit, UserResponse, UserToken } from "$utils/user.uti
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+// import { sendMail } from "$utils/mail.utils";
+// import { emailReminder } from "$utils/mailTemplate.utils";
 import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {
@@ -40,7 +42,7 @@ export async function userLoginService(
       }
     });
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = createToken({...user, isAdmin: user.email ? user.salesZoneId? 1 : 2 : 0});
+      const token = createToken({...user, isAdmin: user.role == 'Admin' ? user.salesZoneId? 1 : 2 : 0});
       const userDetails: UserResponse = {
         token: token,
         salesZoneId: user.salesZoneId,
@@ -49,7 +51,7 @@ export async function userLoginService(
         shNumber: user.shNumber? user.shNumber :"",
       };
       
-      userDetails.isAdmin = user.email ? user.salesZoneId? 1 : 2 : 0
+      userDetails.isAdmin = user.role == 'Admin' ? user.salesZoneId? 1 : 2 : 0
 
       return {
         status: true,
@@ -78,6 +80,7 @@ export async function userRegisterService(
       name: true,
       shNumber: true,
       email: true,
+      role: true,
       salesZoneId: true,
       SalesZone: true
     };
@@ -89,7 +92,7 @@ export async function userRegisterService(
       },
       select: selectedUserField,
     });
-    const token = createToken({...createdUser, isAdmin: createdUser.email ? createdUser.salesZoneId? 1 : 2 : 0});
+    const token = createToken({...createdUser, isAdmin: createdUser.role == 'Admin' ? createdUser.salesZoneId? 1 : 2 : 0});
 
     return {
       status: true,
@@ -159,6 +162,7 @@ export async function getUserService(userId: string, isAdmin: number): Promise<r
     const selectedUserField = {
       id: true,
       shNumber: true,
+      email: true,
       name: true,
     };
     
@@ -177,7 +181,7 @@ export async function getUserService(userId: string, isAdmin: number): Promise<r
     
     const user = await prisma.user.findMany({
       where:{
-        email: null,
+        role: 'Agen',
         salesZoneId: findSalesZone?.salesZoneId?findSalesZone.salesZoneId:undefined
       }, select: selectedUserField
     })
