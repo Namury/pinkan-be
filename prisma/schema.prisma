@@ -75,7 +75,7 @@ model Consumer {
   name                      String
   address                   String
   phone                     String        @unique
-  email                     String?       @unique
+  // email                     String?       @unique
   latitude                  String
   longitude                 String
   cityCode                  String

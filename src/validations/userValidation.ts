@@ -153,7 +153,7 @@ export async function validateEditLoggedInUserRequest(
 ) {
   const id = res.locals.jwtPayload.id;
   const {shNumber, email } = req.body;
-  if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
+  // if (shNumber && email) return response_bad_request(res, "Either SH Number or Email is allowed");
   if (shNumber){
     const checkShNumber = await prisma.user.findFirst({
       where: {
