@@ -11,7 +11,8 @@ import {
   getConsumerReminderListCountService,
   cronJobUpdateConsumerWeeklyHistory,
   getConsumerHistoryService,
-  updateConsumptionDaysRemainingHistoryService
+  updateConsumptionDaysRemainingHistoryService,
+  cronJobSendUserReminder
 } from "$services/consumerServices";
 import { consumerCreate, consumerEdit } from "$utils/consumer.utils";
 import {
@@ -364,6 +365,20 @@ export async function bypassUpdateConsumptionDaysRemainingHistory(req: Request, 
 export async function bypassUpdateConsumerWeeklyHistory(req: Request, res: Response) {
   try {
     const { status, data, error } = await cronJobUpdateConsumerWeeklyHistory();
+    if (status) {
+      return response_success(res, data);
+    } else {
+      return response_bad_request(res, error);
+    }
+
+  } catch (err: unknown) {
+    return response_internal_server_error(res, String(err));
+  }
+}
+
+export async function bypassSendUserReminder(req: Request, res: Response) {
+  try {
+    const { status, data, error } = await cronJobSendUserReminder();
     if (status) {
       return response_success(res, data);
     } else {

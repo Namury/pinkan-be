@@ -676,3 +676,32 @@ export async function cronJobUpdateConsumerWeeklyHistory(): Promise<response> {
     };
   }
 }
+
+export async function cronJobSendUserReminder(): Promise<response> {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        Consumer: {
+          where: {
+            consumptionDaysRemaining : 0
+          }
+        }
+      }
+    })
+
+    // TODO: Send email logic here
+    
+    return {
+      status: true,
+      data: users,
+      message: "Update consumer history success",
+    };
+  } catch (err: unknown) {
+    return {
+      status: false,
+      data: {},
+      message: "Update consumer history Failed",
+      error: String(err),
+    };
+  }
+}
