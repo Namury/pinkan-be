@@ -2,6 +2,10 @@ import { prisma } from "$utils/prisma.utils";
 import { response } from "$utils/response.utils";
 import * as XLSX from 'xlsx';
 
+
+import { sendMail } from "$utils/mail.utils";
+import { emailReminder } from "$utils/mailTemplate.utils";
+
 import { consumerCreate, consumerEdit, consumerFilter, consumerResponse, formattedConsumerExportType, formatExportConsumer, consumerHistoryData, formatHistoryConsumer, formattedConsumerHistoryType, formatResponseConsumer, formattedConsumerResponseType } from "$utils/consumer.utils";
 import { LooseObject } from "$utils/common.utils";
 
@@ -684,16 +688,35 @@ export async function cronJobSendUserReminder(): Promise<response> {
         Consumer: {
           where: {
             consumptionDaysRemaining : 0
+          }, include: {
+            City: true
           }
         }
       }
     })
 
-    // TODO: Send email logic here
+    const sentEmail = users.map(async user => {
+      if(user.Consumer.length && user.email){
+        let consumers = '';
+        user.Consumer.forEach(consumer => {
+          consumers += `
+          <b>
+            <li>${consumer.name} - ${consumer.phone} - ${consumer.City.name}</li>
+          </b>
+          `
+        })
+        console.log('consumers', consumers)
+        const html = emailReminder(user.name, user.Consumer.length, consumers)
+        const subject = '[Reminder] Isi Ulang Tabung Gas Customer'
+        return await sendMail(html, user.email, subject)
+      }
+    })
+
+    const result = await Promise.all(sentEmail)
     
     return {
       status: true,
-      data: users,
+      data: result,
       message: "Update consumer history success",
     };
   } catch (err: unknown) {

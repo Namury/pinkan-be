@@ -3,8 +3,6 @@ import { UserRegister, UserEdit, UserResponse, UserToken } from "$utils/user.uti
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-// import { sendMail } from "$utils/mail.utils";
-// import { emailReminder } from "$utils/mailTemplate.utils";
 import { response } from "$utils/response.utils";
 
 function createToken(user: UserToken) {

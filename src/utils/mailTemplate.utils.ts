@@ -1,4 +1,4 @@
-export const emailReminder = () => `
+export const emailReminder = ( agentName:string, consumerCount:number, consumerList:string) => `
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -129,21 +129,13 @@ export const emailReminder = () => `
 
               <div class="body-text"
                 style="font-family:Helvetica, Arial, sans-serif;font-size:14px;line-height:20px;text-align:left;color:#333333">
-                Dear Agen <b>PT. LOMBOK MITRA UTAMA</b>
+                Dear Agen <b>${agentName}</b>
                 <br><br>
 
-                Saat ini terdapat <b>3</b> customer yang membutuhkan pengisian ulang tabung :
+                Saat ini terdapat <b>${consumerCount}</b> customer yang membutuhkan pengisian ulang tabung :
                 <ol>
                   <!-- start loop list cust -->
-                  <b>
-                    <li>PRIMARASA - 081915911816 - Kota Mataram</li>
-                  </b>
-                  <b>
-                    <li>HOTEL BIDARI - 02129707605 - Kota Mataram</li>
-                  </b>
-                  <b>
-                    <li>INDOMARET BUNGKARNO - 081706200935 - Kota Mataram</li>
-                  </b>
+                  ${consumerList}
                   <!-- end loop list cust -->
                 </ol>
                 Silahkan untuk menghubungi customer di atas untuk melakukan pengisian ulang tabung.
